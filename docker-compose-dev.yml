@@ -1,0 +1,24 @@
+# Servicios de almacenamiento de datos
+# Desarrollo
+services:
+  # PostgreSQL
+  postgres-db:
+    container_name: migadeoro-db_postgres
+    image: postgres:12-alpine
+    restart: always
+    env_file: .env
+    environment:
+      POSTGRES_USER: ${DATABASE_USER}
+      POSTGRES_PASSWORD: ${DATABASE_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DATABASE}
+    ports:
+      - ${POSTGRES_PORT}:5432
+    networks:
+      - migadeoro-network
+
+networks:
+  migadeoro-network:
+    driver: bridge
+
+volumes:
+  migadeoro-db-data:
