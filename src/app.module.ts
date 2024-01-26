@@ -1,9 +1,18 @@
-import { Module } from '@nestjs/common';
-import { CategoriaModule } from './categoria/categoria.module';
-import { PersonalModule } from './personal/personal.module';
+import { Module } from '@nestjs/common'
+import { CategoryModule } from './rest/category/category.module'
+import { PersonalModule } from './personal/personal.module'
+import { DatabaseModule } from './config/database/database.module'
+import { ConfigModule } from '@nestjs/config'
 
 @Module({
-  imports: [CategoriaModule, PersonalModule],
+  imports: [
+    ConfigModule.forRoot({
+      envFilePath: '.env',
+    }),
+    CategoryModule,
+    PersonalModule,
+    DatabaseModule,
+  ],
   controllers: [],
   providers: [],
 })

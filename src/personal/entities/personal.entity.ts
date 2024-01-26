@@ -1,2 +1,1 @@
-export class Personal {
-}
+export class Personal {}
