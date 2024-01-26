@@ -3,6 +3,7 @@ import { CategoryModule } from './rest/category/category.module'
 import { PersonalModule } from './personal/personal.module'
 import { DatabaseModule } from './config/database/database.module'
 import { ConfigModule } from '@nestjs/config'
+import { PersonalModule } from './personal/personal.module';
 
 @Module({
   imports: [
