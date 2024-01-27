@@ -28,7 +28,7 @@ export class CreateProductDto {
         maximum: 10000,
     })
     @IsNumber({}, {message: 'The price must be a number.'})
-    @Min(0, { message: 'The price must be greater than 0.'})
+    @Min(0, { message: "The price can't be negative."})
     @Max(10000, { message: 'The price must be equal or lower than 10000.'})
     price: number;
 
@@ -39,7 +39,7 @@ export class CreateProductDto {
         maximum: 10000,
     })
     @IsInt({message: 'The stock must be a integer.'})
-    @Min(0, { message: 'The stock must be greater than 0.'})
+    @Min(0, { message: "The stock can't be negative."})
     @Max(100000, { message: 'The stock must be equal or lower than 100000.'})
     stock: number;
 
@@ -50,7 +50,7 @@ export class CreateProductDto {
     })
     @IsOptional()
     @IsString()
-    imagen?: string;
+    image?: string;
 
     @ApiProperty({
         example: 'Pan',

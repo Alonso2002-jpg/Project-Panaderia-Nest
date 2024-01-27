@@ -27,17 +27,17 @@ export class Product {
         onUpdate: 'CURRENT_TIMESTAMP',
     })
     updatedAt: Date;
-    @Column({ name: 'is_deleted', type: 'boolean', default: false})
-    isDeleted: boolean;
-/*
+
     @ManyToOne(() => Category, (category) => category.products)
     @JoinColumn({name: 'category_id'})
     category: Category;
-*/
+
     /*
     @ManyToOne(() => Provider, (provider) => provider.products)
     @JoinColumn({name: 'provider_id'})
     provider: Provider;
     */
 
+    @Column({ name: 'is_deleted', type: 'boolean', default: false})
+    isDeleted: boolean;
 }

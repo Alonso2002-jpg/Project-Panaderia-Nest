@@ -17,29 +17,17 @@ export class ResponseProductDto{
         example: 'https://via.placeholder.com/150',
         description: 'Product image URL',
     })
-    imagen: string
-
-    @ApiProperty({
-        example: '2024-01-01T11:00:00Z',
-        description: 'Date and time of product creation.',
-    })
-    createdAt: Date
-
-    @ApiProperty({
-        example: '2024-01-01T11:00:00Z',
-        description: 'Date and time of last product update.',
-    })
-    updatedAt: Date
-
-    @ApiProperty({
-        example: false,
-        description: 'Indicate if the producto has been deleted',
-    })
-    isDeleted: boolean
+    image: string
 
     @ApiProperty({ example: 'Pan', description: 'Product category' })
-    categoria: string
+    category: string
 
     @ApiProperty({example: 'A29268166', description: "Product provider"})
     provider: string;
+
+    @ApiProperty({
+        example: false,
+        description: 'Indicate if the product has been deleted',
+    })
+    isDeleted: boolean
 }
