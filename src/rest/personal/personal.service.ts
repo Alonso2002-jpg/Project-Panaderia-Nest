@@ -198,7 +198,7 @@ export class PersonalService {
 
         const PersonalRemoved = await this.personalRepository.save(personalToRemove)
         const dto = this.personalMapper.toResponseDto(PersonalRemoved)
-        await this.cacheManager.del(`funko_${id}`)
+        await this.cacheManager.del(`_perosnal${id}`)
 
         return dto
     }
