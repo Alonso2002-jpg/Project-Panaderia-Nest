@@ -39,17 +39,8 @@ export class UpdateProductDto extends PartialType(CreateProductDto) {
     stock?: number;
 
     @ApiProperty({
-        example: 'https://via.placeholder.com/150',
-        description: 'Product image URL',
-        required: false,
-    })
-    @IsOptional()
-    @IsString()
-    image?: string;
-
-    @ApiProperty({
         example: 'Pan',
-        description: "Product category"
+        description: "Product category name"
     })
     @IsOptional()
     @IsString()
@@ -58,7 +49,7 @@ export class UpdateProductDto extends PartialType(CreateProductDto) {
 
     @ApiProperty({
         example: 'A29268166',
-        description: "Product provider"
+        description: "Product provider NIF"
     })
     @IsOptional()
     @IsString()

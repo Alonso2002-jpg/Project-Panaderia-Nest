@@ -44,17 +44,8 @@ export class CreateProductDto {
     stock: number;
 
     @ApiProperty({
-        example: 'https://via.placeholder.com/150',
-        description: 'Product image URL',
-        required: false,
-    })
-    @IsOptional()
-    @IsString()
-    image?: string;
-
-    @ApiProperty({
         example: 'Pan',
-        description: "Product category"
+        description: "Product category name"
     })
     @IsString()
     @IsNotEmpty({message: 'The category is required'})
@@ -62,7 +53,7 @@ export class CreateProductDto {
 
     @ApiProperty({
         example: 'A29268166',
-        description: "Product provider"
+        description: "Product provider NIF"
     })
     @IsString()
     @IsNotEmpty({message: 'The provider is required'})

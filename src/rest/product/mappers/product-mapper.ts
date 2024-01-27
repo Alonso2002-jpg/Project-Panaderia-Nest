@@ -12,7 +12,7 @@ export class ProductMapper{
         newProduct.name = createProductDto.name;
         newProduct.price = createProductDto.price;
         newProduct.stock = createProductDto.stock;
-        newProduct.image = createProductDto.image ?? Product.IMAGE_DEFAULT;
+        newProduct.image = Product.IMAGE_DEFAULT;
         newProduct.createdAt = new Date();
         newProduct.updatedAt = new Date();
         newProduct.category = category;
@@ -25,7 +25,6 @@ export class ProductMapper{
         actualProduct.name = updateProductDto.name ?? actualProduct.name;
         actualProduct.price = updateProductDto.price ?? actualProduct.price;
         actualProduct.stock = updateProductDto.stock ?? actualProduct.stock;
-        actualProduct.image = updateProductDto.image ?? Product.IMAGE_DEFAULT;
         actualProduct.updatedAt = new Date();
         actualProduct.category = category;
         actualProduct.provider = provider;
@@ -39,8 +38,8 @@ export class ProductMapper{
         response.price = product.price;
         response.stock = product.stock;
         response.image = product.image;
-        response.category = product.category.nameCategory;
-        response.provider = product.provider.name;
+        response.category = product.category?.nameCategory ?? null;
+        response.provider = product.provider?.nif ?? null;
         response.isDeleted = product.isDeleted;
         return response;
     }

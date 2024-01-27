@@ -19,10 +19,10 @@ export class ResponseProductDto{
     })
     image: string
 
-    @ApiProperty({ example: 'Pan', description: 'Product category' })
+    @ApiProperty({ example: 'Pan', description: 'Product category name' })
     category: string
 
-    @ApiProperty({example: 'A29268166', description: "Product provider"})
+    @ApiProperty({example: 'A29268166', description: "Product provider NIF"})
     provider: string;
 
     @ApiProperty({
