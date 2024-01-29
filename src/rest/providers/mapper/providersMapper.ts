@@ -1,9 +1,9 @@
 import { plainToClass } from 'class-transformer';
 import { validateOrReject } from 'class-validator';
-import { ProvidersEntity } from '../entities/Providers.entity';
-import { CreateProvidersDto } from '../dto/create-Providers.dto';
-import { UpdateProvidersDto } from '../dto/update-Providers.dto';
-import { ProvidersResponseDto } from '../dto/response-Providers.dto';
+import { ProvidersEntity } from '../entities/providers.entity';
+import { CreateProvidersDto } from '../dto/create-providers.dto';
+import { UpdateProvidersDto } from '../dto/update-providers.dto';
+import { ProvidersResponseDto } from '../dto/response-providers.dto';
 
 /**
  * Mapeador de los DTOs de las entidades de proveedor

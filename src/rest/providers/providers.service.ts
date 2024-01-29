@@ -1,5 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { ProvidersEntity } from './entities/Providers.entity';
+import { ProvidersEntity } from './entities/providers.entity';
 import {
   ApiTags,
   ApiOperation,
