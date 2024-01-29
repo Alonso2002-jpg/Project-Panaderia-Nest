@@ -7,6 +7,7 @@ import {
     Min,
 } from 'class-validator'
 
+
 export class AddressDto {
     @IsString()
     @MaxLength(100)
