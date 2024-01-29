@@ -1,14 +1,17 @@
-import { Injectable, NotFoundException } from '@nestjs/common'
+import { Inject, Injectable, NotFoundException } from '@nestjs/common'
 import { CreateCategoryDto } from './dto/create-category.dto'
 import { UpdateCategoryDto } from './dto/update-category.dto'
 import { Repository } from 'typeorm'
 import { Category } from './entities/category.entity'
 import { InjectRepository } from '@nestjs/typeorm'
 import { CategoryMapper } from './mapper/category-mapper.service'
+import { Cache } from 'cache-manager'
+import { CACHE_MANAGER } from '@nestjs/cache-manager'
 
 @Injectable()
 export class CategoryService {
   constructor(
+    @Inject(CACHE_MANAGER) private cacheManager: Cache,
     @InjectRepository(Category)
     private readonly categoryRepository: Repository<Category>,
     private readonly categoryMapper: CategoryMapper,
@@ -20,7 +23,13 @@ export class CategoryService {
   }
 
   async findAll() {
-    return await this.categoryRepository.find()
+    const cache = await this.cacheManager.get('all_categories')
+    if (cache) {
+      return cache
+    }
+    const categories = await this.categoryRepository.find()
+    await this.cacheManager.set('all_categories', categories)
+    return categories
   }
 
   async findOne(id: number) {
