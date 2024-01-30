@@ -1,18 +1,29 @@
-import {BadRequestException, Inject, Injectable, Logger, NotFoundException} from '@nestjs/common';
+import {
+  BadRequestException,
+  Inject,
+  Injectable,
+  Logger,
+  NotFoundException,
+} from '@nestjs/common'
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
-import {ProductMapper} from "./mappers/product-mapper";
-import {Product} from "./entities/product.entity";
-import {Repository} from "typeorm";
-import {InjectRepository} from "@nestjs/typeorm";
-import {Category} from "../category/entities/category.entity";
-import {ResponseProductDto} from "./dto/response-product.dto"
-import { Cache } from 'cache-manager'
-import {CACHE_MANAGER} from "@nestjs/common/cache";
-import {hash} from "typeorm/util/StringUtils";
+import { ProductMapper } from './mappers/product-mapper'
+import { Product } from './entities/product.entity'
+import { Repository } from 'typeorm'
+import { InjectRepository } from '@nestjs/typeorm'
+import { Category } from '../category/entities/category.entity'
+import { ResponseProductDto } from './dto/response-product.dto'
+import { hash } from 'typeorm/util/StringUtils'
 import { v4 as uuidv4 } from 'uuid';
-import * as timers from "timers";
-import {rethrow} from "@nestjs/core/helpers/rethrow";
+import { ProvidersEntity } from '../Providers/entities/Providers.entity'
+import { Cache } from 'cache-manager'
+import { CACHE_MANAGER } from '@nestjs/cache-manager'
+import {
+  FilterOperator,
+  FilterSuffix,
+  paginate,
+  PaginateQuery,
+} from 'nestjs-paginate'
 
 @Injectable()
 export class ProductService {
@@ -23,35 +34,16 @@ export class ProductService {
       private readonly productRepository: Repository<Product>,
       @InjectRepository(Category)
       private readonly categoryRepository: Repository<Category>,
-      @InjectRepository(Provider)
-      private readonly providerRepository: Repository<Provider>,
+      @InjectRepository(ProvidersEntity)
+      private readonly providerRepository: Repository<ProvidersEntity>,
       private readonly productMapper: ProductMapper,
       private readonly storageService : StorageService,
       private readonly productsNotifications: ProductsNotificationsGateway,
-      @Inject(CACHE_MANAGER) private cacheManager: Cache;
+      @Inject(CACHE_MANAGER) private cacheManager: Cache
       ) {}
 
 
-  async create(createProductDto: CreateProductDto) : Promise<ResponseProductDto> {
-    this.logger.log(`Creating product ${JSON.stringify(createProductDto)}`);
-    const category = await this.findCategory(createProductDto.category);
-    const provider = await this.findProvider(createProductDto.provider);
-    const productToCreate = this.productMapper.toProductCreate(
-        createProductDto,
-        category,
-        provider,
-    )
-    const productCreated = await this.productRepository.save({
-      ...productToCreate,
-      id: uuidv4(),
-    });
-    const response = this.productMapper.toProductResponse(productCreated);
-    this.onChange(NotificationTipo.CREATE, dto);
-    await this.invalidateCacheKEY('all_products');
-    return response;
-  }
-
-  async findAll(query: PaginateQuery)
+async findAll(query: PaginateQuery)
 {
   this.logger.log('Finding all products')
   const cache = await this.cacheManager.get(
@@ -96,6 +88,26 @@ export class ProductService {
   return res;
 }
 
+  async create(createProductDto: CreateProductDto) : Promise<ResponseProductDto> {
+    this.logger.log(`Creating product ${JSON.stringify(createProductDto)}`);
+    const category = await this.findCategory(createProductDto.category);
+    const provider = await this.findProvider(createProductDto.provider);
+    const productToCreate = this.productMapper.toProductCreate(
+        createProductDto,
+        category,
+        provider,
+    )
+    const productCreated = await this.productRepository.save({
+      ...productToCreate,
+      id: uuidv4(),
+    });
+    const response = this.productMapper.toProductResponse(productCreated);
+    this.onChange(NotificationTipo.CREATE, dto);
+    await this.invalidateCacheKEY('all_products');
+    return response;
+  }
+
+
   async findOne(id: string): Promise<ResponseProductDto> {
   this.logger.log(`Find product by id:${id}`)
 
@@ -130,8 +142,6 @@ export class ProductService {
 
     return `This action updates a #${id} product`;
   }
-
-
 
 
   async remove(id: number) {
@@ -170,13 +180,13 @@ export class ProductService {
     return category;
   }
 
-async findProvider(nifProvider : string) : Promise <Provider> {
-  const cache : Provider = await this.cacheManager.get(`provider_${nifProvider}`);
+async findProvider(nifProvider : string) : Promise <ProvidersEntity> {
+  const cache : ProvidersEntity = await this.cacheManager.get(`provider_${nifProvider}`);
 if (cache){
   this.logger.log(`Obtained from the cache`)
   return cache;
 }
-const provider : Provider = await this.providerRepository
+const provider : ProvidersEntity = await this.providerRepository
     .createQueryBuilder()
     .where('LOWER(nif) = LOWER(:nifProvider)', {
       nif: nifProvider.toLowerCase(),
@@ -211,8 +221,7 @@ public async updateImage(
   this.logger.log(`Update image producto by id:${id}`)
   const productToUpdate = await this.exists(id)
 
-  // Borramos su imagen si es distinta a la imagen por defecto
-  if (productToUpdate.imagen !== ProductoEntity.IMAGE_DEFAULT) {
+  if (productToUpdate.imagen !== Product.IMAGE_DEFAULT) {
     this.logger.log(`Borrando imagen ${productToUpdate.imagen}`)
     let imagePath = productToUpdate.imagen
     if (withUrl) {
@@ -223,7 +232,7 @@ public async updateImage(
     try {
       this.storageService.removeFile(imagePath)
     } catch (error) {
-      this.logger.error(error) // No lanzamos nada si no existe!!
+      this.logger.error(error)
     }
   }
 
@@ -235,7 +244,6 @@ public async updateImage(
 
   if (withUrl) {
     this.logger.log(`Generando url para ${file.filename}`)
-    // Construimos la url del fichero, que será la url de la API + el nombre del fichero
     const apiVersion = process.env.API_VERSION
         ? `/${process.env.API_VERSION}`
         : ''
@@ -247,13 +255,11 @@ public async updateImage(
   }
 
   productToUpdate.imagen = filePath
-  const productoUpdated = await this.productoRepository.save(productToUpdate)
-  const dto = this.productosMapper.toResponseDto(productoUpdated)
+  const productoUpdated = await this.productRepository.save(productToUpdate)
+  const dto = this.productMapper.toResponseDto(productoUpdated)
   this.onChange(NotificacionTipo.UPDATE, dto)
   await this.invalidateCacheKey(`product_${id}`)
   await this.invalidateCacheKey('all_products')
   return dto
 }
-
-
 }

@@ -1,4 +1,5 @@
 import {IsNotEmpty, IsOptional, IsString} from "class-validator";
+import {ApiProperty} from "@nestjs/swagger";
 
 export class ResponseProductDto{
     @ApiProperty({ example: '5c9d94ac-344f-4992-a714-4243b0787263', description: 'Product ID' })

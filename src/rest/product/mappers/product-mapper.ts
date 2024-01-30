@@ -4,10 +4,11 @@ import {CreateProductDto} from "../dto/create-product.dto";
 import {Category} from "../../category/entities/category.entity";
 import {UpdateProductDto} from "../dto/update-product.dto";
 import {ResponseProductDto} from "../dto/response-product.dto";
+import {ProvidersEntity} from "../../Providers/entities/Providers.entity";
 
 @Injectable()
 export class ProductMapper{
-    toProductCreate( createProductDto : CreateProductDto, category : Category, provider : Provider) : Product {
+    toProductCreate( createProductDto : CreateProductDto, category : Category, provider : ProvidersEntity) : Product {
         const newProduct = new Product();
         newProduct.name = createProductDto.name;
         newProduct.price = createProductDto.price;
@@ -21,7 +22,7 @@ export class ProductMapper{
         return newProduct;
     }
 
-    toProductUpdate(updateProductDto: UpdateProductDto, actualProduct : Product, category: Category, provider: Provider) : Product {
+    toProductUpdate(updateProductDto: UpdateProductDto, actualProduct : Product, category: Category, provider: ProvidersEntity) : Product {
         actualProduct.name = updateProductDto.name ?? actualProduct.name;
         actualProduct.price = updateProductDto.price ?? actualProduct.price;
         actualProduct.stock = updateProductDto.stock ?? actualProduct.stock;
@@ -39,7 +40,7 @@ export class ProductMapper{
         response.stock = product.stock;
         response.image = product.image;
         response.category = product.category?.nameCategory ?? null;
-        response.provider = product.provider?.nif ?? null;
+        response.provider = product.provider?.NIF ?? null;
         response.isDeleted = product.isDeleted;
         return response;
     }
