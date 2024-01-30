@@ -8,6 +8,7 @@ import { Category } from '../category/entities/category.entity'
 import { CacheModule } from '@nestjs/cache-manager'
 import { ProvidersEntity } from '../Providers/entities/Providers.entity'
 import { StorageModule } from '../storage/storage.module';
+import { NotificationModule } from '../../websockets/notification/notification.module'
 
 @Module({
   imports: [

@@ -26,7 +26,7 @@ import {
   PaginateQuery,
 } from 'nestjs-paginate'
 import {NotificationGateway} from "../../websockets/notification/notification.gateway";
-import {NotificationType} from "../../websockets/notification/model/notification.model";
+import {Notification, NotificationType} from "../../websockets/notification/model/notification.model";
 import {StorageService} from "../storage/storage.service";
 
 @Injectable()
@@ -112,6 +112,20 @@ export class ProductService {
     return response
   }
 
+  async findProductByUsername(productName: string) {
+    const productFound: Product = await this.productRepository
+        .createQueryBuilder()
+        .where('UPPER(name) = UPPER(:name)', {
+          name: productName.toUpperCase()
+        })
+        .getOne()
+    if(productFound){
+      throw new BadRequestException(
+        `A product with the name ${productName} already exists`,
+      )
+    }
+  }
+
   async findOne(id: string): Promise<ResponseProductDto> {
     this.logger.log(`Find product by id:${id}`)
     const cache: ResponseProductDto = await this.cacheManager.get(
@@ -146,7 +160,12 @@ export class ProductService {
     const actualProduct: Product = await this.exists(id)
     const category: Category = updateProductDto.category ? await this.findCategory(updateProductDto.category) : actualProduct.category
     const provider: ProvidersEntity = updateProductDto.provider ? await this.findProvider(updateProductDto.provider) : actualProduct.provider
-    const productToUpdate: Product = this.productMapper.toProductUpdate(updateProductDto, actualProduct, category, provider);
+    const productToUpdate: Product = this.productMapper.toProductUpdate(
+      updateProductDto,
+      actualProduct,
+      category,
+      provider,
+    )
     const productUpdated: Product = await this.productRepository.save(productToUpdate);
     const productResponse: ResponseProductDto = this.productMapper.toProductResponse(productUpdated);
     this.onChange(NotificationType.UPDATE, productResponse)
@@ -217,8 +236,8 @@ export class ProductService {
     return provider
   }
 
-  private onChange(tipo: NotificacionTipo, data: ResponseProductDto) {
-    const notificacion = new Notificacion<ResponseProductDto>(
+  private onChange(tipo: NotificationType, data: ResponseProductDto) {
+    const notificacion = new Notification<ResponseProductDto>(
       'PRODUCTS',
       tipo,
       data,
