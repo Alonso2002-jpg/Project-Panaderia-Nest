@@ -1,13 +1,13 @@
-export class Notificacion<T> {
+export class Notification<T> {
   constructor(
     public entity: string,
-    public type: NotificacionTipo,
+    public type: NotificationType,
     public data: T,
     public createdAt: Date,
   ) {}
 }
 
-export enum NotificacionTipo {
+export enum NotificationType {
   CREATE = 'CREATE',
   UPDATE = 'UPDATE',
   DELETE = 'DELETE',

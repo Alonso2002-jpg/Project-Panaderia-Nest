@@ -1,5 +1,12 @@
-import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
-import { ApiProperty } from '@nestjs/swagger';
+import {
+  Column,
+  Entity,
+  JoinColumn,
+  ManyToOne,
+  PrimaryGeneratedColumn,
+} from 'typeorm'
+import { ApiProperty } from '@nestjs/swagger'
+import { Category } from '../../category/entities/category.entity'
 
 /**
  * Entity class for Providers
@@ -12,21 +19,21 @@ export class ProvidersEntity {
    */
   @PrimaryGeneratedColumn()
   @ApiProperty({ type: 'integer', description: 'The id of the provider' })
-  id: number;
+  id: number
 
   /**
    * NIF del proveedor
    */
   @Column('varchar', { length: 9, nullable: false, name: 'NIF' })
   @ApiProperty({ description: 'NIF of the provider' })
-  NIF: string;
+  NIF: string
 
   /**
    * Numero del proveedor
    */
   @Column({ type: 'integer' })
   @ApiProperty({ description: 'Number of the provider' })
-  number: string;
+  number: string
 
   /**
    * Nombre del proveedor
@@ -37,7 +44,7 @@ export class ProvidersEntity {
     minLength: 2,
     maxLength: 50,
   })
-  name: string;
+  name: string
 
   /**
    * Fecha de creacion del proveedor
@@ -47,7 +54,7 @@ export class ProvidersEntity {
     name: 'CreationDate',
   })
   @ApiProperty({ type: Date, description: 'Creation date of the provider' })
-  CreationDate: Date;
+  CreationDate: Date
 
   /**
    * Fecha de actualizacion del proveedor
@@ -57,13 +64,13 @@ export class ProvidersEntity {
     name: 'UpdateDate',
   })
   @ApiProperty({ type: Date, description: 'Update date of the provider' })
-  UpdateDate: Date;
+  UpdateDate: Date
 
   // @OneToOne((type) => User)
   // @JoinColumn({ name: 'user_id' })
   // user: User
 
-  //@ManyToOne((type) => Category)
-  //@JoinColumn({name: 'type'})
-  //type: Category
+  @ManyToOne((type) => Category)
+  @JoinColumn({ name: 'type' })
+  type: Category
 }
