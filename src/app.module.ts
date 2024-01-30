@@ -8,6 +8,7 @@ import { OrdersModule } from './rest/orders/orders.module';
 import { ProductModule } from './rest/product/product.module'
 import { CacheModule } from '@nestjs/cache-manager'
 import { PersonalModule } from './rest/personal/personal.module'
+import { ProvidersModule } from "./rest/providers/providers.module";
 
 @Module({
   imports: [
@@ -18,6 +19,7 @@ import { PersonalModule } from './rest/personal/personal.module'
     PersonalModule,
     DatabaseModule,
     ProductModule,
+    OrdersModule,
   ],
   controllers: [],
   providers: [],

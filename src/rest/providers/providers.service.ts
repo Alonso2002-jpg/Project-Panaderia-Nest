@@ -1,4 +1,4 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Inject, Injectable, Logger } from "@nestjs/common";
 import { ProvidersEntity } from './entities/providers.entity';
 import {
   ApiTags,
@@ -6,7 +6,9 @@ import {
   ApiParam,
   ApiResponse,
   ApiInternalServerErrorResponse,
-} from '@nestjs/swagger'
+} from '@nestjs/swagger';
+import { CACHE_MANAGER } from "@nestjs/common/cache";
+import { Cache } from "cache-manager";
 
 /**
  * Servicio de Providers a cargo de manejar las solicitudes de los proveedores
@@ -15,6 +17,8 @@ import {
 @ApiTags('providers')
 @Injectable()
 export class ProvidersService {
+//constructor(@Inject(CACHE_MANAGER) private cacheManager: Cache) {
+//}
   /**
    * Instancia de ProvidersRepository
    */
@@ -40,8 +44,8 @@ export class ProvidersService {
   })
   @ApiInternalServerErrorResponse({ description: 'Internal server error' })
   async findAll(): Promise<ProvidersEntity[]> {
-    this.logger.log('Obtaining all Providers.')
-    return this.ProvidersRepository
+    this.logger.log('Obtaining all Providers.');
+    return this.ProvidersRepository;
   }
 
   /**
@@ -104,7 +108,7 @@ export class ProvidersService {
       this.ProvidersRepository[index] = { ...Providers, id }
       return this.ProvidersRepository[index]
     }
-    return undefined
+    return undefined;
   }
 
   /**
