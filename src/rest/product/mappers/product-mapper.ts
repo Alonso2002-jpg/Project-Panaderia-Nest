@@ -7,7 +7,7 @@ import {ResponseProductDto} from "../dto/response-product.dto";
 import {ProvidersEntity} from "../../Providers/entities/Providers.entity";
 
 @Injectable()
-export class ProductMapper{
+export class ProductMapper {
     toProductCreate( createProductDto : CreateProductDto, category : Category, provider : ProvidersEntity) : Product {
         const newProduct = new Product();
         newProduct.name = createProductDto.name;

@@ -25,6 +25,8 @@ import {
   paginate,
   PaginateQuery,
 } from 'nestjs-paginate'
+import {NotificationGateway} from "../../websockets/notification/notification.gateway";
+import {NotificationType} from "../../websockets/notification/model/notification.model";
 
 @Injectable()
 export class ProductService {
@@ -39,7 +41,7 @@ export class ProductService {
     private readonly providerRepository: Repository<ProvidersEntity>,
     private readonly productMapper: ProductMapper,
     private readonly storageService: StorageService,
-    private readonly productsNotifications: ProductsNotificationsGateway,
+    private readonly productsNotifications: NotificationGateway,
     @Inject(CACHE_MANAGER) private cacheManager: Cache,
   ) {}
 
@@ -104,8 +106,8 @@ export class ProductService {
       id: uuidv4(),
     })
     const response = this.productMapper.toProductResponse(productCreated)
-    this.onChange(NotificationTipo.CREATE, response)
-    await this.invalidateCacheKEY('all_products')
+    this.onChange(NotificationType.CREATE, response)
+    await this.invalidateCacheKey('all_products')
     return response
   }
 
@@ -146,7 +148,7 @@ export class ProductService {
     const productToUpdate: Product = this.productMapper.toProductUpdate(updateProductDto, actualProduct, category, provider);
     const productUpdated: Product = await this.productRepository.save(productToUpdate);
     const productResponse: ResponseProductDto = this.productMapper.toProductResponse(productUpdated);
-    this.onChange(NotificationTipo.UPDATE, productResponse)
+    this.onChange(NotificationType.UPDATE, productResponse)
     await this.invalidateCacheKey(`product_${id}`)
     await this.invalidateCacheKey(`product_entity_${id}`)
     await this.invalidateCacheKey(`all_products`)
@@ -161,7 +163,7 @@ export class ProductService {
       isDeleted: true,
     })
     const response = this.productMapper.toProductResponse(productRemoved)
-    this.onChange(NotificationTipo.Delete, response)
+    this.onChange(NotificationType.DELETE, response)
     await this.invalidateCacheKey(`product_${id}`)
     await this.invalidateCacheKey(`product_entity_${id}`)
     await this.invalidateCacheKey('all_products')
@@ -269,7 +271,7 @@ export class ProductService {
     productToUpdate.image = filePath
     const productoUpdated = await this.productRepository.save(productToUpdate)
     const dto = this.productMapper.toProductResponse(productoUpdated)
-    this.onChange(NotificacionTipo.UPDATE, dto)
+    this.onChange(NotificationType.UPDATE, dto)
     await this.invalidateCacheKey(`product_${id}`)
     await this.invalidateCacheKey('all_products')
     return dto
