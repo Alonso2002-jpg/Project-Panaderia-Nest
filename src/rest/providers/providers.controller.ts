@@ -6,8 +6,8 @@ import {
   Delete,
   Param,
   Body,
-  HttpCode,
-} from '@nestjs/common';
+  HttpCode, UseInterceptors, Logger
+} from "@nestjs/common";
 import { ProvidersService } from './providers.service';
 import { ProvidersEntity } from './entities/providers.entity';
 import {
@@ -18,13 +18,17 @@ import {
   ApiBadRequestResponse,
   ApiInternalServerErrorResponse,
 } from '@nestjs/swagger';
+import { CacheInterceptor, CacheKey, CacheTTL } from "@nestjs/common/cache";
 
-@ApiTags('providers') // Add tags for the entire controller
+@ApiTags('providers')
+//@UseInterceptors(CacheInterceptor)
 @Controller('Providers')
 /**
  * Controlador de Proveedores a cargo de manejar con las solicitudes de proveedores
  */
 export class ProvidersController {
+  private readonly logger: Logger = new Logger(ProvidersController.name);
+
   /**
    * Constructor metodo para ProvidersController
    * @param {ProvidersService} ProvidersService ProvidersService dependency
@@ -35,6 +39,8 @@ export class ProvidersController {
    * findAll metodo para devolver todos los Proveedores
    * @returns {Promise<ProvidersEntity[]>} Lista de proveedores
    */
+  //@CacheKey('all_providers')
+  //@CacheTTL(30)
   @Get()
   @HttpCode(200)
   @ApiOperation({
@@ -47,8 +53,8 @@ export class ProvidersController {
     type: ProvidersEntity,
     isArray: true,
   })
-  @ApiInternalServerErrorResponse({ description: 'Internal server error' })
   findAll(): Promise<ProvidersEntity[]> {
+    this.logger.log('Obtaining all providers');
     return this.ProvidersService.findAll();
   }
 
@@ -66,8 +72,8 @@ export class ProvidersController {
   @ApiParam({ name: 'id', description: 'Provider ID' })
   @ApiResponse({ status: 200, description: 'Success', type: ProvidersEntity })
   @ApiResponse({ status: 404, description: 'Provider not found' })
-  @ApiInternalServerErrorResponse({ description: 'Internal server error' })
   findOne(@Param('id') id: string): Promise<ProvidersEntity> {
+    this.logger.log(`Obtaining provider with ID: ${id}`);
     return this.ProvidersService.findOne(+id);
   }
 
@@ -86,11 +92,12 @@ export class ProvidersController {
   @ApiBadRequestResponse({ description: 'Bad request' })
   @ApiInternalServerErrorResponse({ description: 'Internal server error' })
   create(@Body() Providers: ProvidersEntity): Promise<ProvidersEntity> {
+    this.logger.log('Creating a new provider');
     return this.ProvidersService.create(Providers);
   }
 
   /**
-   * update metodo para actualizar un proveedor
+   * Update metodo para actualizar un proveedor
    * @param {string} id Proveedor id
    * @param {ProvidersEntity} Providers Proveedor entidad
    * @returns {Promise<ProvidersEntity>} Proveedor entidad
@@ -105,11 +112,11 @@ export class ProvidersController {
   @ApiResponse({ status: 200, description: 'Success', type: ProvidersEntity })
   @ApiResponse({ status: 404, description: 'Provider not found' })
   @ApiBadRequestResponse({ description: 'Bad request' })
-  @ApiInternalServerErrorResponse({ description: 'Internal server error' })
   update(
     @Param('id') id: string,
     @Body() Providers: ProvidersEntity,
   ): Promise<ProvidersEntity> {
+    this.logger.log(`Updating provider with ID: ${id}`);
     return this.ProvidersService.update(+id, Providers);
   }
 
@@ -127,8 +134,8 @@ export class ProvidersController {
   @ApiParam({ name: 'id', description: 'Provider ID' })
   @ApiResponse({ status: 204, description: 'No content' })
   @ApiResponse({ status: 404, description: 'Provider not found' })
-  @ApiInternalServerErrorResponse({ description: 'Internal server error' })
   remove(@Param('id') id: string): Promise<void> {
+    this.logger.log(`Deleting provider with ID: ${id}`);
     return this.ProvidersService.remove(+id);
   }
 }
