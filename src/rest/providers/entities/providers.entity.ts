@@ -2,11 +2,12 @@ import {
   Column,
   Entity,
   JoinColumn,
-  ManyToOne,
-  PrimaryGeneratedColumn,
-} from 'typeorm'
+  ManyToOne, OneToMany,
+  PrimaryGeneratedColumn
+} from "typeorm";
 import { ApiProperty } from '@nestjs/swagger'
 import { Category } from '../../category/entities/category.entity'
+import { Product } from "../../product/entities/product.entity";
 
 /**
  * Entity class for Providers
@@ -73,4 +74,7 @@ export class ProvidersEntity {
   @ManyToOne((type) => Category)
   @JoinColumn({ name: 'type' })
   type: Category
+
+  @OneToMany(() => Product, (product) => product.category)
+  products: Product[]
 }

@@ -6,18 +6,23 @@ import {
     MaxLength,
     Min,
 } from 'class-validator'
+import { ApiProperty } from '@nestjs/swagger'
+
 
 export class AddressDto {
+    @ApiProperty({ example: 'Grove Hill',description: 'The street name', maxLength: 100, required: true })
     @IsString()
     @MaxLength(100)
     @IsNotEmpty()
     street: string
 
+    @ApiProperty({ example: '3',description: 'The number of the street', maxLength: 50, required: true})
     @IsString()
     @MaxLength(50)
     @IsNotEmpty()
     number: string
 
+    @ApiProperty({ example: 'Madrid',description: 'The name of the city', maxLength: 100, required: true})
     @IsString()
     @MaxLength(100)
     @IsNotEmpty()
