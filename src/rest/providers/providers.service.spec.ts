@@ -1,6 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { ProvidersService } from './Providers.service';
-import { ProvidersEntity } from './entities/Providers.entity';
+import { ProvidersService } from './providers.service';
+import { ProvidersEntity } from './entities/providers.entity';
 
 describe('ProvidersService', () => {
   let service: ProvidersService;
