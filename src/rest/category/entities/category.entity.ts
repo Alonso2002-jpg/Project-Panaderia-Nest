@@ -35,7 +35,7 @@ export class Category {
     default: () => 'CURRENT_TIMESTAMP',
     onUpdate: 'CURRENT_TIMESTAMP',
   })
-  private updatedAt: Date
+  updatedAt: Date
   @Column({ name: 'is_deleted', type: 'boolean', default: false })
   isDeleted: boolean
   @OneToMany(() => Product, (product) => product.category)
