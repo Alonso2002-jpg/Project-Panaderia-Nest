@@ -7,7 +7,7 @@ import {
   Delete,
   UseInterceptors,
   Put,
-  Logger, HttpCode, UseGuards, Patch, BadRequestException, ParseIntPipe, UploadedFile
+  Logger, HttpCode, UseGuards, Patch, BadRequestException, UploadedFile
 } from '@nestjs/common';
 import { ProductService } from './product.service';
 import { CreateProductDto } from './dto/create-product.dto';
@@ -31,6 +31,7 @@ import { diskStorage } from 'multer';
 import { v4 as uuidv4 } from 'uuid';
 import { FileInterceptor } from '@nestjs/platform-express'
 import { ProductExistsGuard } from './guards/product-exists.guard'
+import { BodyValidatorPipe } from '../utils/pipes/body-validator.pipe'
 
 @Controller('product')
 @UseInterceptors(CacheInterceptor)
@@ -105,7 +106,7 @@ export class ProductController {
   @ApiBadRequestResponse({
     description: 'The category does not exist or is not valid.',
   })
-  create(@Body() createProductDto: CreateProductDto) {
+  create(@Body(new BodyValidatorPipe()) createProductDto: CreateProductDto) {
     this.logger.log(`Creating product`)
     return this.productService.create(createProductDto);
   }
@@ -128,7 +129,7 @@ export class ProductController {
   @ApiBadRequestResponse({
     description: 'Invalid Product ID',
   })
-  findOne(@Param('id', UuidValidatorPipe) id: string) {
+  findOne(@Param('id', new UuidValidatorPipe()) id: string) {
     this.logger.log(`Finding a product by id: ${id}`)
     return this.productService.findOne(id);
   }
@@ -162,7 +163,7 @@ export class ProductController {
     description: 'The category does not exist or is not valid.',
   })
   @Put(':id')
-  update(@Param('id', UuidValidatorPipe) id: string, @Body() updateProductDto: UpdateProductDto) {
+  update(@Param('id', new UuidValidatorPipe()) id: string, @Body(new BodyValidatorPipe()) updateProductDto: UpdateProductDto) {
     this.logger.log(`Updating product`)
     return this.productService.update(id, updateProductDto);
   }
@@ -187,7 +188,7 @@ export class ProductController {
   @ApiBadRequestResponse({
     description: 'The product id is not valid.',
   })
-  remove(@Param('id', UuidValidatorPipe) id: string) {
+  remove(@Param('id', new UuidValidatorPipe()) id: string) {
     this.logger.log(`Removing product`)
     return this.productService.remove(id);
   }
@@ -267,10 +268,10 @@ export class ProductController {
       }),
   )
   async updateImage(
-      @Param('id', ParseIntPipe) id: number,
+      @Param('id', new UuidValidatorPipe()) id: string,
       @UploadedFile() file: Express.Multer.File
   ) {
-    this.logger.log(`Updating product image by ${id} with ${file}`)
+    this.logger.log(`Updating product image by ${id} with ${file.filename}`)
     return await this.productService.updateImage(id, file)
   }
 }

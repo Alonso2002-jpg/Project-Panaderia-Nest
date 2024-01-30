@@ -98,7 +98,7 @@ export class ProductService {
   ): Promise<ResponseProductDto> {
     this.logger.log(`Creating product ${JSON.stringify(createProductDto)}`)
     let idTemp : string;
-    const productNameExist : Product = await this.findProductByUsername(createProductDto.name);
+    const productNameExist : Product = await this.findProductByName(createProductDto.name);
     if (productNameExist) {
       if(!productNameExist.isDeleted){
         throw new BadRequestException(
@@ -125,7 +125,7 @@ export class ProductService {
     return response
   }
 
-  private async findProductByUsername(productName: string) {
+  private async findProductByName(productName: string) {
     return await this.productRepository
       .createQueryBuilder()
       .where('UPPER(name) = UPPER(:name)', {
@@ -176,7 +176,7 @@ export class ProductService {
     const category: Category = updateProductDto.category ? await this.findCategory(updateProductDto.category) : actualProduct.category
     const provider: ProvidersEntity = updateProductDto.provider ? await this.findProvider(updateProductDto.provider) : actualProduct.provider
     if(updateProductDto.name){
-      const nameAlreadyExist: Product = await this.findProductByUsername(updateProductDto.name)
+      const nameAlreadyExist: Product = await this.findProductByName(updateProductDto.name)
       if(nameAlreadyExist && nameAlreadyExist.id != id && !nameAlreadyExist.isDeleted){
         throw new BadRequestException(
             `A product with the name ${updateProductDto.name} already exists`,
