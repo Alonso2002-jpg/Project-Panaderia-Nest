@@ -6,14 +6,16 @@ import { TypeOrmModule } from '@nestjs/typeorm'
 import { Product } from './entities/product.entity'
 import { Category } from '../category/entities/category.entity'
 import { CacheModule } from '@nestjs/cache-manager'
-import {ProvidersEntity} from "../Providers/entities/Providers.entity";
+import { ProvidersEntity } from '../Providers/entities/Providers.entity'
 
 @Module({
   imports: [
       TypeOrmModule.forFeature([Product]),
-    TypeOrmModule.forFeature([Category]),
-    TypeOrmModule.forFeature([ProvidersEntity]),
-    CacheModule.register(),
+      TypeOrmModule.forFeature([Category]),
+      TypeOrmModule.forFeature([ProvidersEntity]),
+      CacheModule.register(),
+      NotificationModule,
+      StorageModule,
   ],
   controllers: [ProductController],
   providers: [ProductService, ProductMapper],
