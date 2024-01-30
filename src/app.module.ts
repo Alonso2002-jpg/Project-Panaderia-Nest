@@ -5,6 +5,9 @@ import { ConfigModule } from '@nestjs/config'
 import { PersonalModule } from './personal/personal.module';
 import { ProductModule } from './rest/product/product.module';
 import { OrdersModule } from './rest/orders/orders.module';
+import { ProductModule } from './rest/product/product.module'
+import { CacheModule } from '@nestjs/cache-manager'
+import { PersonalModule } from './rest/personal/personal.module'
 import { ProvidersModule } from "./rest/providers/providers.module";
 import { StorageModule } from './rest/storage/storage.module';
 
