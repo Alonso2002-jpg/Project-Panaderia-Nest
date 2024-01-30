@@ -95,6 +95,12 @@ export class ProductService {
     createProductDto: CreateProductDto,
   ): Promise<ResponseProductDto> {
     this.logger.log(`Creating product ${JSON.stringify(createProductDto)}`)
+    const productNameExist : Product = await this.findProductByUsername(createProductDto.name);
+    if (productNameExist) {
+      throw new BadRequestException(
+          `A product with the name ${createProductDto.name} already exists`,
+      )
+    }
     const category = await this.findCategory(createProductDto.category)
     const provider = await this.findProvider(createProductDto.provider)
     const productToCreate = this.productMapper.toProductCreate(
@@ -112,18 +118,13 @@ export class ProductService {
     return response
   }
 
-  async findProductByUsername(productName: string) {
-    const productFound: Product = await this.productRepository
-        .createQueryBuilder()
-        .where('UPPER(name) = UPPER(:name)', {
-          name: productName.toUpperCase()
-        })
+  private async findProductByUsername(productName: string) {
+    return await this.productRepository
+      .createQueryBuilder()
+      .where('UPPER(name) = UPPER(:name)', {
+        name: productName.toUpperCase()
+      })
         .getOne()
-    if(productFound){
-      throw new BadRequestException(
-        `A product with the name ${productName} already exists`,
-      )
-    }
   }
 
   async findOne(id: string): Promise<ResponseProductDto> {
@@ -160,6 +161,14 @@ export class ProductService {
     const actualProduct: Product = await this.exists(id)
     const category: Category = updateProductDto.category ? await this.findCategory(updateProductDto.category) : actualProduct.category
     const provider: ProvidersEntity = updateProductDto.provider ? await this.findProvider(updateProductDto.provider) : actualProduct.provider
+    if(updateProductDto.name){
+      const nameAlreadyExist: Product = await this.findProductByUsername(updateProductDto.name)
+      if(nameAlreadyExist && nameAlreadyExist.id != id){
+        throw new BadRequestException(
+            `A product with the name ${updateProductDto.name} already exists`,
+        )
+      }
+    }
     const productToUpdate: Product = this.productMapper.toProductUpdate(
       updateProductDto,
       actualProduct,
