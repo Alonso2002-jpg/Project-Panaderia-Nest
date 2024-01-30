@@ -1,8 +1,31 @@
-import {Controller, Get, Post, Body, Patch, Param, Delete, UseInterceptors, ParseUUIDPipe, Put} from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Param,
+  Delete,
+  UseInterceptors,
+  ParseUUIDPipe,
+  Put,
+  Logger, HttpCode, UseGuards
+} from '@nestjs/common';
 import { ProductService } from './product.service';
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
-import {CacheInterceptor} from "@nestjs/common/cache";
+import {
+  ApiBadRequestResponse,
+  ApiBearerAuth,
+  ApiBody,
+  ApiNotFoundResponse,
+  ApiParam,
+  ApiQuery,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger'
+import { CacheInterceptor, CacheKey, CacheTTL } from '@nestjs/cache-manager'
+import { Paginate, Paginated, PaginateQuery } from 'nestjs-paginate'
+import { ResponseProductDto } from './dto/response-product.dto';
 
 @Controller('product')
 @UseInterceptors(CacheInterceptor)
@@ -53,7 +76,7 @@ export class ProductController {
   })
   async findAll(@Paginate() query: PaginateQuery) {
     this.logger.log('Find all products')
-    return await this.productService.findAll(query);
+    return await this.productService.findAll(query)
   }
 
   @Post()

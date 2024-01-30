@@ -4,10 +4,11 @@ import {CreateProductDto} from "../dto/create-product.dto";
 import {Category} from "../../category/entities/category.entity";
 import {UpdateProductDto} from "../dto/update-product.dto";
 import {ResponseProductDto} from "../dto/response-product.dto";
+import {ProvidersEntity} from "../../Providers/entities/Providers.entity";
 
 @Injectable()
-export class ProductMapper{
-    toProductCreate( createProductDto : CreateProductDto, category : Category, provider : Provider) : Product {
+export class ProductMapper {
+    toProductCreate( createProductDto : CreateProductDto, category : Category, provider : ProvidersEntity) : Product {
         const newProduct = new Product();
         newProduct.name = createProductDto.name;
         newProduct.price = createProductDto.price;
@@ -21,25 +22,25 @@ export class ProductMapper{
         return newProduct;
     }
 
-    toProductUpdate(updateProductDto: UpdateProductDto, actualProduct : Product, category: Category, provider: Provider) : Product {
+    toProductUpdate(updateProductDto: UpdateProductDto, actualProduct : Product, category: Category, provider: ProvidersEntity) : Product {
         actualProduct.name = updateProductDto.name ?? actualProduct.name;
         actualProduct.price = updateProductDto.price ?? actualProduct.price;
         actualProduct.stock = updateProductDto.stock ?? actualProduct.stock;
         actualProduct.updatedAt = new Date();
         actualProduct.category = category;
         actualProduct.provider = provider;
-        actualProduct.isDeleted = updateProductDto.isDeleted ?? actualProduct.isDeleted;
+        actualProduct.isDeleted = updateProductDto.isDeleted != null ? updateProductDto.isDeleted : actualProduct.isDeleted;
         return actualProduct;
     }
 
     toProductResponse(product : Product) : ResponseProductDto {
-        const response = new ResponseProductDto();
+        const response : ResponseProductDto = new ResponseProductDto();
         response.name = product.name;
         response.price = product.price;
         response.stock = product.stock;
         response.image = product.image;
         response.category = product.category?.nameCategory ?? null;
-        response.provider = product.provider?.nif ?? null;
+        response.provider = product.provider?.NIF ?? null;
         response.isDeleted = product.isDeleted;
         return response;
     }
