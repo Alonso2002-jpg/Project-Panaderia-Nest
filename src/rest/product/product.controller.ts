@@ -106,6 +106,9 @@ export class ProductController {
   @ApiBadRequestResponse({
     description: 'The category does not exist or is not valid.',
   })
+  @ApiBadRequestResponse({
+    description: 'The provider does not exist or is not valid.',
+  })
   create(@Body(new BodyValidatorPipe()) createProductDto: CreateProductDto) {
     this.logger.log(`Creating product`)
     return this.productService.create(createProductDto);
@@ -124,7 +127,7 @@ export class ProductController {
     type: String,
   })
   @ApiNotFoundResponse({
-    description: 'Producto not found',
+    description: 'Product not found',
   })
   @ApiBadRequestResponse({
     description: 'Invalid Product ID',
@@ -161,6 +164,9 @@ export class ProductController {
   })
   @ApiBadRequestResponse({
     description: 'The category does not exist or is not valid.',
+  })
+  @ApiBadRequestResponse({
+    description: 'The provider does not exist or is not valid.',
   })
   @Put(':id')
   update(@Param('id', new UuidValidatorPipe()) id: string, @Body(new BodyValidatorPipe()) updateProductDto: UpdateProductDto) {
