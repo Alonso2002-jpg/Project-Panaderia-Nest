@@ -14,7 +14,6 @@ import { InjectRepository } from '@nestjs/typeorm'
 import { Category } from '../category/entities/category.entity'
 import { ResponseProductDto } from './dto/response-product.dto'
 import { hash } from 'typeorm/util/StringUtils'
-import { Request } from 'express'
 import { v4 as uuidv4 } from 'uuid'
 import { ProvidersEntity } from '../Providers/entities/Providers.entity'
 import { Cache } from 'cache-manager'
@@ -25,9 +24,12 @@ import {
   paginate,
   PaginateQuery,
 } from 'nestjs-paginate'
-import {NotificationGateway} from "../../websockets/notification/notification.gateway";
-import {Notification, NotificationType} from "../../websockets/notification/model/notification.model";
-import {StorageService} from "../storage/storage.service";
+import { NotificationGateway } from '../../websockets/notification/notification.gateway'
+import {
+  Notification,
+  NotificationType,
+} from '../../websockets/notification/model/notification.model'
+import { StorageService } from '../storage/storage.service'
 
 @Injectable()
 export class ProductService {
@@ -95,11 +97,16 @@ export class ProductService {
     createProductDto: CreateProductDto,
   ): Promise<ResponseProductDto> {
     this.logger.log(`Creating product ${JSON.stringify(createProductDto)}`)
+    let idTemp : string;
     const productNameExist : Product = await this.findProductByUsername(createProductDto.name);
     if (productNameExist) {
-      throw new BadRequestException(
-          `A product with the name ${createProductDto.name} already exists`,
-      )
+      if(!productNameExist.isDeleted){
+        throw new BadRequestException(
+            `A product with the name ${createProductDto.name} already exists`,
+        )
+      } else {
+        idTemp = productNameExist.id;
+      }
     }
     const category = await this.findCategory(createProductDto.category)
     const provider = await this.findProvider(createProductDto.provider)
@@ -110,9 +117,9 @@ export class ProductService {
     )
     const productCreated = await this.productRepository.save({
       ...productToCreate,
-      id: uuidv4(),
+      id: idTemp || uuidv4(),
     })
-    const response = this.productMapper.toProductResponse(productCreated)
+    const response : ResponseProductDto = this.productMapper.toProductResponse(productCreated)
     this.onChange(NotificationType.CREATE, response)
     await this.invalidateCacheKey('all_products')
     return response
@@ -159,11 +166,18 @@ export class ProductService {
       `Updating product by id ${id} with ${JSON.stringify(updateProductDto)}`,
     )
     const actualProduct: Product = await this.exists(id)
+    if(!actualProduct) {
+      this.logger.log(`Product with id ${id} not found.`)
+      throw new NotFoundException(`Product with id ${id} not found.`)
+    } else if(actualProduct.isDeleted && (updateProductDto.isDeleted == null || updateProductDto.isDeleted)){
+        this.logger.log(`Product with id ${id} not found.`)
+        throw new NotFoundException(`Product with id ${id} not found.`);
+    }
     const category: Category = updateProductDto.category ? await this.findCategory(updateProductDto.category) : actualProduct.category
     const provider: ProvidersEntity = updateProductDto.provider ? await this.findProvider(updateProductDto.provider) : actualProduct.provider
     if(updateProductDto.name){
       const nameAlreadyExist: Product = await this.findProductByUsername(updateProductDto.name)
-      if(nameAlreadyExist && nameAlreadyExist.id != id){
+      if(nameAlreadyExist && nameAlreadyExist.id != id && !nameAlreadyExist.isDeleted){
         throw new BadRequestException(
             `A product with the name ${updateProductDto.name} already exists`,
         )
@@ -187,6 +201,10 @@ export class ProductService {
   async remove(id: string) {
     this.logger.log(`Removing product by id: ${id}`)
     const productToRemove = await this.exists(id)
+    if(!productToRemove){
+      this.logger.log(`Product with id ${id} not found.`)
+      throw new NotFoundException(`Product with id ${id} not found.`);
+    }
     const productRemoved = await this.productRepository.save({
       ...productToRemove,
       isDeleted: true,
@@ -214,7 +232,7 @@ export class ProductService {
       })
       .getOne()
 
-    if (!category) {
+    if (!category || category.isDeleted) {
       this.logger.log(`Category ${nameCategory} doesn't exist`)
       throw new BadRequestException(`Category ${nameCategory} doesn't exist`)
     }
@@ -256,54 +274,39 @@ export class ProductService {
   }
 
   public async updateImage(
-    id: string,
-    file: Express.Multer.File,
-    req: Request,
-    withUrl: boolean = true,
+      id:string,
+      file: Express.Multer.File
   ) {
-    this.logger.log(`Update image producto by id:${id}`)
-    const productToUpdate = await this.exists(id)
+    this.logger.log(`Updating product img by id: ${id}`)
+    const productToUpdate = await this.exists(id);
+    if(!productToUpdate){
+      this.logger.log(`Product with id ${id} not found.`)
+      throw new NotFoundException(`Product with id ${id} not found.`);
+    }
 
-    if (productToUpdate.image !== Product.IMAGE_DEFAULT) {
-      this.logger.log(`Borrando imagen ${productToUpdate.image}`)
-      let imagePath = productToUpdate.image
-      if (withUrl) {
-        imagePath = this.storageService.getFileNameWithouUrl(
-          productToUpdate.image,
-        )
-      }
+    if (productToUpdate.image !== Product.IMAGE_DEFAULT){
+      this.logger.log(`Deleting image ${productToUpdate.image}`)
+      const imagePath : string = productToUpdate.image;
+
       try {
-        this.storageService.removeFile(imagePath)
-      } catch (error) {
-        this.logger.error(error)
+        this.storageService.removeFile(imagePath);
+      } catch (error){
+        this.logger.error(error);
       }
     }
 
-    if (!file) {
-      throw new BadRequestException('Fichero no encontrado.')
+    if (!file){
+      throw new BadRequestException('File not found.')
     }
 
-    let filePath: string
-
-    if (withUrl) {
-      this.logger.log(`Generando url para ${file.filename}`)
-      const apiVersion = process.env.API_VERSION
-        ? `/${process.env.API_VERSION}`
-        : ''
-      filePath = `${req.protocol}://${req.get('host')}${apiVersion}/storage/${
-        file.filename
-      }`
-    } else {
-      filePath = file.filename
-    }
-
-    productToUpdate.image = filePath
-    const productoUpdated = await this.productRepository.save(productToUpdate)
-    const dto = this.productMapper.toProductResponse(productoUpdated)
-    this.onChange(NotificationType.UPDATE, dto)
+    productToUpdate.image = file.filename;
+    const productUpdated : Product = await this.productRepository.save(productToUpdate);
+    const productResponse : ResponseProductDto = this.productMapper.toProductResponse(productUpdated);
+    this.onChange(NotificationType.UPDATE, productResponse)
     await this.invalidateCacheKey(`product_${id}`)
+    await this.invalidateCacheKey(`product_entity_${id}`)
     await this.invalidateCacheKey('all_products')
-    return dto
+    return productResponse;
   }
 
   public async exists(id: string): Promise<Product> {
@@ -312,20 +315,16 @@ export class ProductService {
       this.logger.log(`Obtained from the cache`)
       return cache
     }
-
     const product: Product = await this.productRepository
       .createQueryBuilder('product')
       .leftJoinAndSelect('product.category', 'category')
       .leftJoinAndSelect('product.provider', 'provider')
       .where('product.id = :id', { id })
       .getOne()
-
-    if (!product) {
-      this.logger.log(`Product with id ${id} not found.`)
-      throw new NotFoundException(`Product with id ${id} not found.`)
+    if (product && !product.isDeleted) {
+      await this.cacheManager.set(`product_entity_${id}`, product, 60000)
     }
-    await this.cacheManager.set(`product_entity_${id}`, product, 60000)
-    return product
+    return product;
   }
 
   async invalidateCacheKey(keyPattern: string): Promise<void> {

@@ -5,6 +5,7 @@ import {Category} from "../../category/entities/category.entity";
 import {UpdateProductDto} from "../dto/update-product.dto";
 import {ResponseProductDto} from "../dto/response-product.dto";
 import {ProvidersEntity} from "../../Providers/entities/Providers.entity";
+import * as process from 'process'
 
 @Injectable()
 export class ProductMapper {
@@ -29,7 +30,7 @@ export class ProductMapper {
         actualProduct.updatedAt = new Date();
         actualProduct.category = category;
         actualProduct.provider = provider;
-        actualProduct.isDeleted = updateProductDto.isDeleted != null ? updateProductDto.isDeleted : actualProduct.isDeleted;
+        actualProduct.isDeleted = updateProductDto.isDeleted ?? actualProduct.isDeleted;
         return actualProduct;
     }
 
@@ -38,7 +39,9 @@ export class ProductMapper {
         response.name = product.name;
         response.price = product.price;
         response.stock = product.stock;
-        response.image = product.image;
+        response.image = product.image == Product.IMAGE_DEFAULT
+            ? product.image :
+            `${process.env.API_PROTOCOL || 'https'}://${process.env.API_HOST || 'localhost'}:${process.env.API_PORT || '3000'}/${process.env.API_VERSION || 'v1'}/storage/${product.image}`
         response.category = product.category?.nameCategory ?? null;
         response.provider = product.provider?.NIF ?? null;
         response.isDeleted = product.isDeleted;

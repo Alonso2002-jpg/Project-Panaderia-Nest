@@ -6,9 +6,8 @@ import {
   Param,
   Delete,
   UseInterceptors,
-  ParseUUIDPipe,
   Put,
-  Logger, HttpCode, UseGuards
+  Logger, HttpCode, UseGuards, Patch, BadRequestException, ParseIntPipe, UploadedFile
 } from '@nestjs/common';
 import { ProductService } from './product.service';
 import { CreateProductDto } from './dto/create-product.dto';
@@ -16,9 +15,9 @@ import { UpdateProductDto } from './dto/update-product.dto';
 import {
   ApiBadRequestResponse,
   ApiBearerAuth,
-  ApiBody,
+  ApiBody, ApiConsumes,
   ApiNotFoundResponse,
-  ApiParam,
+  ApiParam, ApiProperty,
   ApiQuery,
   ApiResponse,
   ApiTags,
@@ -26,6 +25,12 @@ import {
 import { CacheInterceptor, CacheKey, CacheTTL } from '@nestjs/cache-manager'
 import { Paginate, Paginated, PaginateQuery } from 'nestjs-paginate'
 import { ResponseProductDto } from './dto/response-product.dto';
+import { UuidValidatorPipe } from '../utils/pipes/uuid-validator.pipe'
+import { extname, parse } from 'path';
+import { diskStorage } from 'multer';
+import { v4 as uuidv4 } from 'uuid';
+import { FileInterceptor } from '@nestjs/platform-express'
+import { ProductExistsGuard } from './guards/product-exists.guard'
 
 @Controller('product')
 @UseInterceptors(CacheInterceptor)
@@ -123,7 +128,7 @@ export class ProductController {
   @ApiBadRequestResponse({
     description: 'Invalid Product ID',
   })
-  findOne(@Param('id', ParseUUIDPipe) id: string) {
+  findOne(@Param('id', UuidValidatorPipe) id: string) {
     this.logger.log(`Finding a product by id: ${id}`)
     return this.productService.findOne(id);
   }
@@ -157,7 +162,7 @@ export class ProductController {
     description: 'The category does not exist or is not valid.',
   })
   @Put(':id')
-  update(@Param('id', ParseUUIDPipe) id: string, @Body() updateProductDto: UpdateProductDto) {
+  update(@Param('id', UuidValidatorPipe) id: string, @Body() updateProductDto: UpdateProductDto) {
     this.logger.log(`Updating product`)
     return this.productService.update(id, updateProductDto);
   }
@@ -182,8 +187,90 @@ export class ProductController {
   @ApiBadRequestResponse({
     description: 'The product id is not valid.',
   })
-  remove(@Param('id', ParseUUIDPipe) id: string) {
+  remove(@Param('id', UuidValidatorPipe) id: string) {
     this.logger.log(`Removing product`)
     return this.productService.remove(id);
+  }
+
+
+  @Patch('/image/:id')
+  @UseGuards(JwtAuthGuard, RolesAuthGuard)
+  @Roles('ADMIN')
+  @UseGuards(ProductExistsGuard)
+  @ApiBearerAuth()
+  @ApiResponse({
+    status: 200,
+    description: 'Updated image',
+    type: ResponseProductDto,
+  })
+  @ApiParam({
+    name: 'id',
+    description: 'Product ID',
+    type: String,
+  })
+  @ApiProperty({
+    name: 'file',
+    description: 'Image file',
+    type: 'string',
+    format: 'binary',
+  })
+  @ApiConsumes('multipart/form-data')
+  @ApiBody({
+    description: 'Image file',
+    type: FileInterceptor('file'),
+  })
+  @ApiNotFoundResponse({
+    description: 'Product not found',
+  })
+  @ApiBadRequestResponse({
+    description: 'Invalid Product ID',
+  })
+  @ApiBadRequestResponse({
+    description: 'The file is not valid or of an unsupported type.',
+  })
+  @ApiBadRequestResponse({
+    description: 'The file cannot be larger than 1 megabyte.',
+  })
+  @UseInterceptors(
+      FileInterceptor('file', {
+        storage: diskStorage({
+          destination: process.env.UPLOADS_DIR || './storage-dir',
+          filename: (req, file, cb) => {
+            const { name } = parse(file.originalname)
+            const uuid = uuidv4();
+            const fileName = `${uuid}_${name.replace(/\s/g, '')}`
+            const fileExt = extname(file.originalname)
+            cb(null, `${fileName}${fileExt}`)
+          },
+        }),
+        fileFilter: (req, file, cb) => {
+          const allowedMimes = ['image/jpeg', 'image/png', 'image/gif']
+          const maxFileSize = 1024 * 1024 // 1 megabyte
+          if (!allowedMimes.includes(file.mimetype)) {
+            cb(
+                new BadRequestException(
+                    'Unsupported file. It is not of a valid image type.',
+                ),
+                false,
+            )
+          } else if (file.size > maxFileSize) {
+            cb(
+                new BadRequestException(
+                    'The file size cannot be greater than 1 megabyte.',
+                ),
+                false,
+            )
+          } else {
+            cb(null, true)
+          }
+        },
+      }),
+  )
+  async updateImage(
+      @Param('id', ParseIntPipe) id: number,
+      @UploadedFile() file: Express.Multer.File
+  ) {
+    this.logger.log(`Updating product image by ${id} with ${file}`)
+    return await this.productService.updateImage(id, file)
   }
 }
