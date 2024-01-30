@@ -11,7 +11,7 @@ import {
   Post,
   Put,
   Query,
-  UseGuards
+  UseGuards, UseInterceptors
 } from "@nestjs/common";
 import { OrdersService } from './orders.service';
 import { CreateOrderDto } from './dto/create-order.dto';
@@ -19,11 +19,12 @@ import { UpdateOrderDto } from './dto/update-order.dto';
 import { OrderValidatePipe } from './pipes/order-validate.pipe'
 import { IdValidatePipe } from './pipes/id-validate.pipe'
 import { ApiExcludeController } from "@nestjs/swagger";
-import { JwtAuthGuard } from "../auth/guards/jwt-auth.guard";
-import { RolesAuthGuard } from "../auth/guards/roles-auth.guard";
-
+import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard'
+import { RolesAuthGuard } from '../auth/guards/roles-auth.guard'
+import { CacheInterceptor } from '@nestjs/cache-manager';
 
 @Controller('orders')
+@UseInterceptors(CacheInterceptor)
 @UseGuards(JwtAuthGuard, RolesAuthGuard)
 @ApiExcludeController()
 export class OrdersController {
