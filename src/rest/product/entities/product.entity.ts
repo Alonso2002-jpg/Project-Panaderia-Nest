@@ -1,4 +1,12 @@
-import {Column, CreateDateColumn, Entity, JoinColumn, ManyToOne, PrimaryColumn, UpdateDateColumn} from "typeorm";
+import {
+  Column,
+  CreateDateColumn,
+  Entity,
+  JoinColumn,
+  ManyToOne,
+  PrimaryColumn,
+  UpdateDateColumn,
+} from 'typeorm'
 import { Category } from '../../category/entities/category.entity'
 import {ProvidersEntity} from "../../Providers/entities/Providers.entity";
 
@@ -29,14 +37,14 @@ export class Product {
     })
     updatedAt: Date;
 
-    @ManyToOne(() => Category, (category) => category.products)
-    @JoinColumn({name: 'category_id'})
-    category: Category;
+  @ManyToOne(() => Category, (category) => category.products)
+  @JoinColumn({ name: 'category_id' })
+  category: Category
 
     @ManyToOne(() => ProvidersEntity, (provider) => provider.products)
     @JoinColumn({name: 'provider_id'})
     provider: ProvidersEntity;
 
-    @Column({ name: 'is_deleted', type: 'boolean', default: false})
-    isDeleted: boolean;
+  @Column({ name: 'is_deleted', type: 'boolean', default: false })
+  isDeleted: boolean
 }

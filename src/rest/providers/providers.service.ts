@@ -1,4 +1,4 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Inject, Injectable, Logger } from "@nestjs/common";
 import { ProvidersEntity } from './entities/providers.entity';
 import {
   ApiTags,
@@ -7,6 +7,8 @@ import {
   ApiResponse,
   ApiInternalServerErrorResponse,
 } from '@nestjs/swagger';
+import { CACHE_MANAGER } from "@nestjs/common/cache";
+import { Cache } from "cache-manager";
 
 /**
  * Servicio de Providers a cargo de manejar las solicitudes de los proveedores
@@ -15,14 +17,16 @@ import {
 @ApiTags('providers')
 @Injectable()
 export class ProvidersService {
+//constructor(@Inject(CACHE_MANAGER) private cacheManager: Cache) {
+//}
   /**
    * Instancia de ProvidersRepository
    */
-  private readonly ProvidersRepository: ProvidersEntity[] = [];
+  private readonly ProvidersRepository: ProvidersEntity[] = []
   /**
    *  Instancia de Logger
    */
-  private readonly logger: Logger = new Logger(ProvidersService.name);
+  private readonly logger: Logger = new Logger(ProvidersService.name)
 
   /**
    * Encuentra todos los proveedores
@@ -58,8 +62,8 @@ export class ProvidersService {
   @ApiResponse({ status: 404, description: 'Provider not found' })
   @ApiInternalServerErrorResponse({ description: 'Internal server error' })
   async findOne(id: number): Promise<ProvidersEntity | undefined> {
-    this.logger.log(`Searching Providers by ID: ${id}`);
-    return this.ProvidersRepository.find((Providers) => Providers.id === id);
+    this.logger.log(`Searching Providers by ID: ${id}`)
+    return this.ProvidersRepository.find((Providers) => Providers.id === id)
   }
 
   /**
@@ -74,10 +78,10 @@ export class ProvidersService {
   @ApiResponse({ status: 201, description: 'Created', type: ProvidersEntity })
   @ApiInternalServerErrorResponse({ description: 'Internal server error' })
   async create(Providers: ProvidersEntity): Promise<ProvidersEntity> {
-    this.logger.log('Creating a new Providers.');
-    const newProviders = { ...Providers, id: this.getNextId() };
-    this.ProvidersRepository.push(newProviders);
-    return newProviders;
+    this.logger.log('Creating a new Providers.')
+    const newProviders = { ...Providers, id: this.getNextId() }
+    this.ProvidersRepository.push(newProviders)
+    return newProviders
   }
 
   /**
@@ -98,11 +102,11 @@ export class ProvidersService {
     id: number,
     Providers: ProvidersEntity,
   ): Promise<ProvidersEntity | undefined> {
-    this.logger.log(`Updating Provider with ID: ${id}`);
-    const index = this.ProvidersRepository.findIndex((p) => p.id === id);
+    this.logger.log(`Updating Provider with ID: ${id}`)
+    const index = this.ProvidersRepository.findIndex((p) => p.id === id)
     if (index !== -1) {
-      this.ProvidersRepository[index] = { ...Providers, id };
-      return this.ProvidersRepository[index];
+      this.ProvidersRepository[index] = { ...Providers, id }
+      return this.ProvidersRepository[index]
     }
     return undefined;
   }
@@ -122,10 +126,10 @@ export class ProvidersService {
   @ApiResponse({ status: 404, description: 'Provider not found' })
   @ApiInternalServerErrorResponse({ description: 'Internal server error' })
   async remove(id: number): Promise<void> {
-    this.logger.log(`Deleting Providers with ID: ${id}`);
-    const index = this.ProvidersRepository.findIndex((p) => p.id === id);
+    this.logger.log(`Deleting Providers with ID: ${id}`)
+    const index = this.ProvidersRepository.findIndex((p) => p.id === id)
     if (index !== -1) {
-      this.ProvidersRepository.splice(index, 1);
+      this.ProvidersRepository.splice(index, 1)
     }
   }
 
@@ -135,7 +139,7 @@ export class ProvidersService {
    */
   // Private Method to obtain the next ID available.
   private getNextId(): number {
-    const maxId = Math.max(...this.ProvidersRepository.map((p) => p.id), 0);
-    return maxId + 1;
+    const maxId = Math.max(...this.ProvidersRepository.map((p) => p.id), 0)
+    return maxId + 1
   }
 }
