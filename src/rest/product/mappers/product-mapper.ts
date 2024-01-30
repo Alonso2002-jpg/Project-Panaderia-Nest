@@ -29,12 +29,12 @@ export class ProductMapper {
         actualProduct.updatedAt = new Date();
         actualProduct.category = category;
         actualProduct.provider = provider;
-        actualProduct.isDeleted = updateProductDto.isDeleted ?? actualProduct.isDeleted;
+        actualProduct.isDeleted = updateProductDto.isDeleted != null ? updateProductDto.isDeleted : actualProduct.isDeleted;
         return actualProduct;
     }
 
     toProductResponse(product : Product) : ResponseProductDto {
-        const response = new ResponseProductDto();
+        const response : ResponseProductDto = new ResponseProductDto();
         response.name = product.name;
         response.price = product.price;
         response.stock = product.stock;

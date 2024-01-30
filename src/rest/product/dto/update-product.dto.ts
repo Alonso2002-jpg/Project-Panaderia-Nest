@@ -2,6 +2,7 @@ import { PartialType } from '@nestjs/mapped-types';
 import { CreateProductDto } from './create-product.dto';
 import {IsBoolean, IsInt, IsNotEmpty, IsNumber, IsOptional, IsString, Length, Max, Min} from "class-validator";
 import {ApiProperty} from "@nestjs/swagger";
+import {Transform} from "class-transformer";
 
 export class UpdateProductDto extends PartialType(CreateProductDto) {
     @ApiProperty({
@@ -13,6 +14,7 @@ export class UpdateProductDto extends PartialType(CreateProductDto) {
     @IsOptional()
     @IsString()
     @Length(3, 100, { message: 'The name must be between 3 and 100 characters.' })
+    @Transform((name) => name.value.trim())
     name?: string;
 
     @ApiProperty({
@@ -46,6 +48,7 @@ export class UpdateProductDto extends PartialType(CreateProductDto) {
     @IsOptional()
     @IsString()
     @IsNotEmpty({message: 'The category is required'})
+    @Transform((category) => category.value.trim())
     category?: string;
 
     @ApiProperty({
@@ -55,6 +58,7 @@ export class UpdateProductDto extends PartialType(CreateProductDto) {
     @IsOptional()
     @IsString()
     @IsNotEmpty({message: 'The provider is required'})
+    @Transform((provider) => provider.value.trim())
     provider?: string;
 
     @ApiProperty({

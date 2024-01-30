@@ -27,6 +27,7 @@ import {
 } from 'nestjs-paginate'
 import {NotificationGateway} from "../../websockets/notification/notification.gateway";
 import {NotificationType} from "../../websockets/notification/model/notification.model";
+import {StorageService} from "../storage/storage.service";
 
 @Injectable()
 export class ProductService {

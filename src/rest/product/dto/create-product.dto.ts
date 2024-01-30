@@ -8,6 +8,7 @@ import {
   Min,
 } from 'class-validator'
 import {ApiProperty} from "@nestjs/swagger";
+import {Transform} from "class-transformer";
 
 export class CreateProductDto {
     @ApiProperty({
@@ -19,6 +20,7 @@ export class CreateProductDto {
     @IsString()
     @IsNotEmpty({message: 'The name is required'})
     @Length(3, 100, { message: 'The name must be between 3 and 100 characters.' })
+    @Transform((name) => name.value.trim())
     name: string;
 
     @ApiProperty({
@@ -45,17 +47,19 @@ export class CreateProductDto {
 
     @ApiProperty({
         example: 'Pan',
-        description: "Product category name"
+        description: "Product category name",
     })
     @IsString()
     @IsNotEmpty({message: 'The category is required'})
+    @Transform((category) => category.value.trim())
     category: string;
 
     @ApiProperty({
         example: 'A29268166',
-        description: "Product provider NIF"
+        description: "Product provider NIF",
     })
     @IsString()
     @IsNotEmpty({message: 'The provider is required'})
+    @Transform((provider) => provider.value.trim())
     provider: string;
 }

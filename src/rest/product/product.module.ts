@@ -7,6 +7,7 @@ import { Product } from './entities/product.entity'
 import { Category } from '../category/entities/category.entity'
 import { CacheModule } from '@nestjs/cache-manager'
 import { ProvidersEntity } from '../Providers/entities/Providers.entity'
+import { StorageModule } from '../storage/storage.module';
 
 @Module({
   imports: [
