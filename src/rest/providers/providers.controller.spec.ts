@@ -1,7 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { ProvidersController } from './Providers.controller';
-import { ProvidersService } from './Providers.service';
-import { ProvidersEntity } from './entities/Providers.entity';
+import { ProvidersController } from './providers.controller';
+import { ProvidersService } from './providers.service';
+import { ProvidersEntity } from './entities/providers.entity';
 
 describe('ProvidersController', () => {
   let controller: ProvidersController;

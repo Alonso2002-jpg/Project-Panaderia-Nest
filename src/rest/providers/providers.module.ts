@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common';
-import { ProvidersService } from './Providers.service';
-import { ProvidersController } from './Providers.controller';
+import { ProvidersService } from './providers.service';
+import { ProvidersController } from './providers.controller';
 /**
  * El decorador @Module del paquete @nestjs/common se utiliza para definir un módulo en el framework NestJS.
  * Las propiedades controllers y providers contienen una matriz de los controladores y proveedores que forman parte de este módulo.

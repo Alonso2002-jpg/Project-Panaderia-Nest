@@ -8,8 +8,8 @@ import {
   Body,
   HttpCode,
 } from '@nestjs/common';
-import { ProvidersService } from './Providers.service';
-import { ProvidersEntity } from './entities/Providers.entity';
+import { ProvidersService } from './providers.service';
+import { ProvidersEntity } from './entities/providers.entity';
 import {
   ApiOperation,
   ApiResponse,
