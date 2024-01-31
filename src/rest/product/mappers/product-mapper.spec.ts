@@ -74,13 +74,16 @@ describe('ProductMapper', () => {
         provider: provider.name,
     }
 
-    const updateProductDto: UpdateProductDto = {
+    const updateProductDto1: UpdateProductDto = {
         name: 'Pan de Leche',
         price: 2.99,
         stock: 30,
         category: "Product Category 2",
         provider: "Product Provider 2",
         isDeleted: true,
+    }
+
+    const updateProductDto2: UpdateProductDto = {
     }
 
     const product : Product = {
@@ -93,6 +96,19 @@ describe('ProductMapper', () => {
         updatedAt: new Date(),
         category: categoryProduct,
         provider: provider,
+        isDeleted: false,
+    }
+
+    const product2 : Product = {
+        id: "5c9d94ac-344f-4992-a714-4243b0787264",
+        name: "Pan Arabe",
+        price: 1.20,
+        stock: 50,
+        image: 'https://via.placeholder.com/150',
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        category: null,
+        provider: null,
         isDeleted: false,
     }
 
@@ -124,20 +140,36 @@ describe('ProductMapper', () => {
         expect(newProduct.isDeleted).toBeFalsy();
     })
 
-    it('should map updateProductDto to Product', () =>{
-        const updatedProduct : Product = productMapper.toProductUpdate(updateProductDto, product, categoryProduct2, provider2);
+    it('should map updateProductDto to Product updating every fields', () =>{
+        const updatedProduct : Product = productMapper.toProductUpdate(updateProductDto1, product, categoryProduct2, provider2);
 
         expect(updatedProduct).toBeInstanceOf(Product);
         expect(updatedProduct.id).toEqual(product.id)
-        expect(updatedProduct.name).toEqual(updateProductDto.name);
-        expect(updatedProduct.price).toEqual(updateProductDto.price);
-        expect(updatedProduct.stock).toEqual(updateProductDto.stock);
+        expect(updatedProduct.name).toEqual(updateProductDto1.name);
+        expect(updatedProduct.price).toEqual(updateProductDto1.price);
+        expect(updatedProduct.stock).toEqual(updateProductDto1.stock);
         expect(updatedProduct.image).toEqual(product.image);
         expect(updatedProduct.createdAt).toEqual(product.createdAt);
         expect(updatedProduct.updatedAt.getTime()).toBeGreaterThan(product.updatedAt.getTime());
         expect(updatedProduct.category).toEqual(categoryProduct2);
         expect(updatedProduct.provider).toEqual(provider2)
         expect(updatedProduct.isDeleted).toBeTruthy();
+    })
+
+    it('should map updateProductDto to Product updating only isDeleted', () =>{
+        const updatedProduct : Product = productMapper.toProductUpdate(updateProductDto2, product, categoryProduct2, provider2);
+
+        expect(updatedProduct).toBeInstanceOf(Product);
+        expect(updatedProduct.id).toEqual(product.id)
+        expect(updatedProduct.name).toEqual(product.name);
+        expect(updatedProduct.price).toEqual(product.price);
+        expect(updatedProduct.stock).toEqual(product.stock);
+        expect(updatedProduct.image).toEqual(product.image);
+        expect(updatedProduct.createdAt).toEqual(product.createdAt);
+        expect(updatedProduct.updatedAt.getTime()).toBeGreaterThan(product.updatedAt.getTime());
+        expect(updatedProduct.category).toEqual(categoryProduct2);
+        expect(updatedProduct.provider).toEqual(provider2)
+        expect(updatedProduct.isDeleted).toBeFalsy();
     })
 
     it('should map Product to ResponseProductDto', () =>{
@@ -154,5 +186,17 @@ describe('ProductMapper', () => {
         expect(response.isDeleted).toEqual(product.isDeleted);
     })
 
+    it('should map Product to ResponseProductDto with Category and Provider equals to Null', () =>{
+        const result : ResponseProductDto = productMapper.toProductResponse(product2);
 
+        expect(result).toBeInstanceOf(ResponseProductDto);
+        expect(result.id).toEqual(product2.id)
+        expect(result.name).toEqual(product2.name);
+        expect(result.price).toEqual(product2.price);
+        expect(result.stock).toEqual(product2.stock);
+        expect(result.image).toEqual(product2.image);
+        expect(result.category).toBeNull()
+        expect(result.provider).toBeNull()
+        expect(result.isDeleted).toEqual(product2.isDeleted);
+    })
 })

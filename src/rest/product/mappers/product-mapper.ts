@@ -34,7 +34,7 @@ export class ProductMapper {
         updatedProduct.updatedAt = new Date();
         updatedProduct.category = category;
         updatedProduct.provider = provider;
-        updatedProduct.isDeleted = updateProductDto.isDeleted ?? actualProduct.isDeleted;
+        updatedProduct.isDeleted = updateProductDto.isDeleted != null ? updateProductDto.isDeleted : actualProduct.isDeleted;
         return updatedProduct;
     }
 
