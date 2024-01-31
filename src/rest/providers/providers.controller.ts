@@ -19,6 +19,7 @@ import {
   ApiInternalServerErrorResponse,
 } from '@nestjs/swagger';
 import { CacheInterceptor, CacheKey, CacheTTL } from "@nestjs/common/cache";
+import { Paginate, PaginateQuery } from "nestjs-paginate";
 
 @ApiTags('providers')
 //@UseInterceptors(CacheInterceptor)
@@ -53,9 +54,9 @@ export class ProvidersController {
     type: ProvidersEntity,
     isArray: true,
   })
-  findAll(): Promise<ProvidersEntity[]> {
-    this.logger.log('Obtaining all providers');
-    return this.ProvidersService.findAll();
+  async findAll(@Paginate() query: PaginateQuery) {
+    this.logger.log('Find all providers')
+    return await this.ProvidersService.findAll(query)
   }
 
   /**
