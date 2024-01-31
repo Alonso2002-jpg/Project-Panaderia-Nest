@@ -24,18 +24,23 @@ export class ProductMapper {
     }
 
     toProductUpdate(updateProductDto: UpdateProductDto, actualProduct : Product, category: Category, provider: ProvidersEntity) : Product {
-        actualProduct.name = updateProductDto.name ?? actualProduct.name;
-        actualProduct.price = updateProductDto.price ?? actualProduct.price;
-        actualProduct.stock = updateProductDto.stock ?? actualProduct.stock;
-        actualProduct.updatedAt = new Date();
-        actualProduct.category = category;
-        actualProduct.provider = provider;
-        actualProduct.isDeleted = updateProductDto.isDeleted ?? actualProduct.isDeleted;
-        return actualProduct;
+        const updatedProduct = new Product();
+        updatedProduct.id = actualProduct.id;
+        updatedProduct.name = updateProductDto.name ?? actualProduct.name;
+        updatedProduct.price = updateProductDto.price ?? actualProduct.price;
+        updatedProduct.stock = updateProductDto.stock ?? actualProduct.stock;
+        updatedProduct.image = actualProduct.image;
+        updatedProduct.createdAt = actualProduct.createdAt;
+        updatedProduct.updatedAt = new Date();
+        updatedProduct.category = category;
+        updatedProduct.provider = provider;
+        updatedProduct.isDeleted = updateProductDto.isDeleted ?? actualProduct.isDeleted;
+        return updatedProduct;
     }
 
     toProductResponse(product : Product) : ResponseProductDto {
         const response : ResponseProductDto = new ResponseProductDto();
+        response.id = product.id;
         response.name = product.name;
         response.price = product.price;
         response.stock = product.stock;
