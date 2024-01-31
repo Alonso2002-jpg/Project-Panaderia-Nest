@@ -201,7 +201,7 @@ export class ProductService {
   async remove(id: string) {
     this.logger.log(`Removing product by id: ${id}`)
     const productToRemove = await this.exists(id)
-    if(!productToRemove){
+    if(!productToRemove || productToRemove.isDeleted){
       this.logger.log(`Product with id ${id} not found.`)
       throw new NotFoundException(`Product with id ${id} not found.`);
     }
@@ -250,7 +250,7 @@ export class ProductService {
     }
     const provider: ProvidersEntity = await this.providerRepository
       .createQueryBuilder()
-      .where('LOWER(nif) = LOWER(:nifProvider)', {
+      .where('LOWER(NIF) = LOWER(:nifProvider)', {
         nif: nifProvider.toLowerCase(),
       })
       .getOne()
