@@ -1,14 +1,24 @@
-import { Inject, Injectable, Logger } from "@nestjs/common";
-import { ProvidersEntity } from './entities/providers.entity';
+import { Inject, Injectable, Logger } from '@nestjs/common'
+import { ProvidersEntity } from './entities/providers.entity'
 import {
   ApiTags,
   ApiOperation,
   ApiParam,
   ApiResponse,
   ApiInternalServerErrorResponse,
-} from '@nestjs/swagger';
-import { CACHE_MANAGER } from "@nestjs/common/cache";
-import { Cache } from "cache-manager";
+} from '@nestjs/swagger'
+import { ProvidersMapper } from './mapper/providersMapper'
+import { CACHE_MANAGER } from '@nestjs/common/cache'
+import { Cache } from 'cache-manager'
+import {
+  FilterOperator,
+  FilterSuffix,
+  paginate,
+  PaginateQuery,
+} from 'nestjs-paginate'
+import { hash } from 'typeorm/util/StringUtils'
+import { InjectRepository } from '@nestjs/typeorm'
+import { Repository } from 'typeorm'
 
 /**
  * Servicio de Providers a cargo de manejar las solicitudes de los proveedores
@@ -17,12 +27,20 @@ import { Cache } from "cache-manager";
 @ApiTags('providers')
 @Injectable()
 export class ProvidersService {
-//constructor(@Inject(CACHE_MANAGER) private cacheManager: Cache) {
-//}
+  constructor(
+    /**
+     * Instancia de Cache
+     */
+    @Inject(CACHE_MANAGER) private cacheManager: Cache,
+    /**
+     * Instancia de ProvidersRepository
+     */
+    @InjectRepository(ProvidersEntity)
+    private readonly ProvidersRepository: Repository<ProvidersEntity>,
+  ) {}
   /**
    * Instancia de ProvidersRepository
    */
-  private readonly ProvidersRepository: ProvidersEntity[] = []
   /**
    *  Instancia de Logger
    */
@@ -43,9 +61,46 @@ export class ProvidersService {
     isArray: true,
   })
   @ApiInternalServerErrorResponse({ description: 'Internal server error' })
-  async findAll(): Promise<ProvidersEntity[]> {
-    this.logger.log('Obtaining all Providers.');
-    return this.ProvidersRepository;
+  async findAll(query: NonNullable<unknown>) {
+    this.logger.log('Finding all providers')
+    const cache = await this.cacheManager.get(
+      `all_products_page_${hash(JSON.stringify(query))}`,
+    )
+    if (cache) {
+      this.logger.log('Providers obtained from the cache')
+      return cache
+    }
+    const queryBuilder = this.ProvidersRepository.createQueryBuilder(
+      'providers',
+    ).leftJoinAndSelect('providers.category', 'type')
+
+    const pagination = await paginate(<PaginateQuery>query, queryBuilder, {
+      sortableColumns: ['NIF', 'number', 'name'],
+      defaultSortBy: [['id', 'ASC']],
+      searchableColumns: ['NIF', 'number', 'name'],
+      filterableColumns: {
+        name: [FilterOperator.EQ, FilterSuffix.NOT],
+        number: true,
+        NIF: true,
+        isDeleted: [FilterOperator.EQ, FilterSuffix.NOT],
+      },
+    })
+
+    const res = {
+      data: (pagination.data ?? []).map((provider) =>
+        ProvidersMapper.toEntity(provider),
+      ),
+      meta: pagination.meta,
+      links: pagination.links,
+    }
+
+    await this.cacheManager.set(
+      `all_products_page_${hash(JSON.stringify(query))}`,
+      res,
+      60,
+    )
+
+    return res
   }
 
   /**
@@ -60,12 +115,10 @@ export class ProvidersService {
   @ApiParam({ name: 'id', description: 'Provider ID' })
   @ApiResponse({ status: 200, description: 'Success', type: ProvidersEntity })
   @ApiResponse({ status: 404, description: 'Provider not found' })
-  @ApiInternalServerErrorResponse({ description: 'Internal server error' })
-  async findOne(id: number): Promise<ProvidersEntity | undefined> {
+  async findOne(id: number): Promise<ProvidersEntity> {
     this.logger.log(`Searching Providers by ID: ${id}`)
-    return this.ProvidersRepository.find((Providers) => Providers.id === id)
+    return this.ProvidersRepository.findOne({ where: { id } })
   }
-
   /**
    * Crea un nuevo proveedor
    * @param {ProvidersEntity} Providers
@@ -76,14 +129,13 @@ export class ProvidersService {
     description: 'Create a new provider from the service',
   })
   @ApiResponse({ status: 201, description: 'Created', type: ProvidersEntity })
-  @ApiInternalServerErrorResponse({ description: 'Internal server error' })
   async create(Providers: ProvidersEntity): Promise<ProvidersEntity> {
     this.logger.log('Creating a new Providers.')
-    const newProviders = { ...Providers, id: this.getNextId() }
-    this.ProvidersRepository.push(newProviders)
-    return newProviders
+    const newProviders = this.ProvidersRepository.create(Providers)
+    newProviders.id = await this.getNextId()
+    const savedProviders = await this.ProvidersRepository.save(newProviders)
+    return savedProviders
   }
-
   /**
    * Actualizar un proveedor por su ID
    * @param {number} id
@@ -97,18 +149,27 @@ export class ProvidersService {
   @ApiParam({ name: 'id', description: 'Provider ID' })
   @ApiResponse({ status: 200, description: 'Success', type: ProvidersEntity })
   @ApiResponse({ status: 404, description: 'Provider not found' })
-  @ApiInternalServerErrorResponse({ description: 'Internal server error' })
   async update(
     id: number,
-    Providers: ProvidersEntity,
+    updatedProvider: ProvidersEntity,
   ): Promise<ProvidersEntity | undefined> {
     this.logger.log(`Updating Provider with ID: ${id}`)
-    const index = this.ProvidersRepository.findIndex((p) => p.id === id)
-    if (index !== -1) {
-      this.ProvidersRepository[index] = { ...Providers, id }
-      return this.ProvidersRepository[index]
+
+    const existingProvider = await this.ProvidersRepository.findOne({
+      where: { id },
+    })
+
+    if (existingProvider) {
+      // Si encontramos el proveedor, actualizamos sus propiedades
+      await this.ProvidersRepository.save({
+        ...existingProvider,
+        ...updatedProvider,
+      })
+
+      return existingProvider
     }
-    return undefined;
+    // Si no encontramos el proveedor, devolvemos undefined
+    return undefined
   }
 
   /**
@@ -127,19 +188,19 @@ export class ProvidersService {
   @ApiInternalServerErrorResponse({ description: 'Internal server error' })
   async remove(id: number): Promise<void> {
     this.logger.log(`Deleting Providers with ID: ${id}`)
-    const index = this.ProvidersRepository.findIndex((p) => p.id === id)
-    if (index !== -1) {
-      this.ProvidersRepository.splice(index, 1)
-    }
+    await this.ProvidersRepository.delete(id)
   }
-
   /**
    * Consigue el siguiente id disponible
    * @returns number
    */
   // Private Method to obtain the next ID available.
-  private getNextId(): number {
-    const maxId = Math.max(...this.ProvidersRepository.map((p) => p.id), 0)
+  private async getNextId(): Promise<number> {
+    const providers = await this.ProvidersRepository.find({
+      order: { id: 'DESC' },
+      take: 1,
+    })
+    const maxId = providers.length > 0 ? providers[0].id : 0
     return maxId + 1
   }
 }
