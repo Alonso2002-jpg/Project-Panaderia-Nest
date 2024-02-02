@@ -33,7 +33,7 @@ import { FileInterceptor } from '@nestjs/platform-express'
 import { ProductExistsGuard } from './guards/product-exists.guard'
 import { BodyValidatorPipe } from '../utils/pipes/body-validator.pipe'
 
-@Controller('product')
+@Controller('products')
 @UseInterceptors(CacheInterceptor)
 @ApiTags('Products')
 export class ProductController {
