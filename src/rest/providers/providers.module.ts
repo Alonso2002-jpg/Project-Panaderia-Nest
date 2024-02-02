@@ -1,6 +1,9 @@
 import { Module } from '@nestjs/common';
 import { ProvidersService } from './providers.service';
 import { ProvidersController } from './providers.controller';
+import { CacheModule } from '@nestjs/cache-manager';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { ProvidersEntity } from './entities/providers.entity';
 /**
  * El decorador @Module del paquete @nestjs/common se utiliza para definir un módulo en el framework NestJS.
  * Las propiedades controllers y providers contienen una matriz de los controladores y proveedores que forman parte de este módulo.
@@ -10,6 +13,10 @@ import { ProvidersController } from './providers.controller';
  */
 
 @Module({
+  imports: [
+    CacheModule.register(),
+    TypeOrmModule.forFeature([ProvidersEntity]),
+  ],
   controllers: [ProvidersController],
   providers: [ProvidersService],
 })
