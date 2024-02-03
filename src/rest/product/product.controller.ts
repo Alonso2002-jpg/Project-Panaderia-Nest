@@ -93,8 +93,8 @@ export class ProductController {
 
   @Post()
   @HttpCode(201)
-  @UseGuards(JwtAuthGuard, RolesAuthGuard)
-  @Roles('ADMIN')
+  //@UseGuards(JwtAuthGuard, RolesAuthGuard)
+  //@Roles('ADMIN')
   @ApiBearerAuth()
   @ApiResponse({
     status: 201,
@@ -143,8 +143,8 @@ export class ProductController {
   }
 
   @Put(':id')
-  @UseGuards(JwtAuthGuard, RolesAuthGuard)
-  @Roles('ADMIN')
+  //@UseGuards(JwtAuthGuard, RolesAuthGuard)
+  //@Roles('ADMIN')
   @ApiBearerAuth()
   @ApiResponse({
     status: 200,
@@ -184,8 +184,8 @@ export class ProductController {
 
   @Delete(':id')
   @HttpCode(204)
-  @UseGuards(JwtAuthGuard, RolesAuthGuard)
-  @Roles('ADMIN')
+  //@UseGuards(JwtAuthGuard, RolesAuthGuard)
+  //@Roles('ADMIN')
   @ApiBearerAuth()
   @ApiResponse({
     status: 204,
@@ -208,8 +208,8 @@ export class ProductController {
   }
 
   @Patch('/image/:id')
-  @UseGuards(JwtAuthGuard, RolesAuthGuard)
-  @Roles('ADMIN')
+  //@UseGuards(JwtAuthGuard, RolesAuthGuard)
+  //@Roles('ADMIN')
   @UseGuards(ProductExistsGuard)
   @ApiBearerAuth()
   @ApiResponse({
