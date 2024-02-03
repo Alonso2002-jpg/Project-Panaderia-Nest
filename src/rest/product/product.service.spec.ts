@@ -454,6 +454,34 @@ describe('ProductService', () => {
       expect(notificationGateway.sendMessage).toHaveBeenCalled()
     })
 
+    it('should update an existing product with an updated request when exist a product with isDeleted is true but the request change isDeleted to false', async () => {
+      const updateProductDto : UpdateProductDto = new UpdateProductDto();
+      updateProductDto.isDeleted = false;
+      const actualProduct: Product = new Product();
+      actualProduct.isDeleted = true;
+      const updatedProduct : Product = new Product();
+      const result: ResponseProductDto = new ResponseProductDto();
+
+      const mockQueryBuilderProduct = {
+        leftJoinAndSelect: jest.fn().mockReturnThis(),
+        orderBy: jest.fn().mockReturnThis(),
+        where: jest.fn().mockReturnThis(),
+        getOne: jest.fn().mockResolvedValue(actualProduct)
+      }
+
+      jest.spyOn(productRepository, 'createQueryBuilder')
+          .mockReturnValue(mockQueryBuilderProduct as any)
+      jest.spyOn(mapper, 'toProductUpdate').mockReturnValue(updatedProduct);
+      jest.spyOn(mapper, 'toProductResponse').mockReturnValue(result);
+      jest.spyOn(productRepository, 'save').mockResolvedValue(updatedProduct);
+
+      expect(await service.update("5c9d94ac-344f-4992-a714-4243b0787263", updateProductDto)).toEqual(result)
+      expect(mapper.toProductResponse).toHaveBeenCalled()
+      expect(mapper.toProductUpdate).toHaveBeenCalled()
+      expect(productRepository.save).toHaveBeenCalled()
+      expect(notificationGateway.sendMessage).toHaveBeenCalled()
+    })
+
     it('should update an existing product with an updated request when we want to change category and it exists', async () => {
       const category: Category = new Category();
       category.nameCategory = 'Category test'
@@ -496,12 +524,109 @@ describe('ProductService', () => {
 
     it('should update an existing product with an updated request when we want to change provider and it exists', async () => {
       const provider: ProvidersEntity = new ProvidersEntity();
-      provider.NIF = 'Category test'
+      provider.NIF = 'A29268166';
       const updateProductDto : UpdateProductDto = new UpdateProductDto();
-      updateProductDto.category = 'Category test'
+      updateProductDto.provider = 'A29268166'
       const actualProduct: Product = new Product();
       const updatedProduct : Product = new Product();
       const result: ResponseProductDto = new ResponseProductDto();
+
+      const mockQueryBuilderProduct = {
+        leftJoinAndSelect: jest.fn().mockReturnThis(),
+        orderBy: jest.fn().mockReturnThis(),
+        where: jest.fn().mockReturnThis(),
+        getOne: jest.fn().mockResolvedValue(actualProduct)
+      }
+
+      const mockQueryBuilderProvider = {
+        leftJoinAndSelect: jest.fn().mockReturnThis(),
+        orderBy: jest.fn().mockReturnThis(),
+        where: jest.fn().mockReturnThis(),
+        getOne: jest.fn().mockResolvedValue(provider)
+      }
+
+      jest.spyOn(productRepository, 'createQueryBuilder')
+          .mockReturnValue(mockQueryBuilderProduct as any)
+
+      jest.spyOn(providerRepository, 'createQueryBuilder')
+          .mockReturnValue(mockQueryBuilderProvider as any)
+
+      jest.spyOn(mapper, 'toProductUpdate').mockReturnValue(updatedProduct);
+      jest.spyOn(mapper, 'toProductResponse').mockReturnValue(result);
+      jest.spyOn(productRepository, 'save').mockResolvedValue(updatedProduct);
+
+      expect(await service.update("5c9d94ac-344f-4992-a714-4243b0787263", updateProductDto)).toEqual(result)
+      expect(mapper.toProductResponse).toHaveBeenCalled()
+      expect(mapper.toProductUpdate).toHaveBeenCalled()
+      expect(productRepository.save).toHaveBeenCalled()
+      expect(notificationGateway.sendMessage).toHaveBeenCalled()
+    })
+
+    it('should throw an error if product doesn`t exist', async () => {
+      const mockQueryBuilderProduct = {
+        leftJoinAndSelect: jest.fn().mockReturnThis(),
+        orderBy: jest.fn().mockReturnThis(),
+        where: jest.fn().mockReturnThis(),
+        getOne: jest.fn().mockResolvedValue(undefined)
+      }
+
+      jest.spyOn(productRepository, 'createQueryBuilder')
+          .mockReturnValue(mockQueryBuilderProduct as any)
+
+      await expect(service.update("5c9d94ac-344f-4992-a714-4243b0787263", new UpdateProductDto())).rejects.toThrow(NotFoundException)
+    })
+
+    it('should throw an error if product exist but isDeleted is true and the request doesn`t change it to false', async () => {
+      const product : Product = new Product();
+      product.isDeleted = true;
+
+      const mockQueryBuilderProduct = {
+        leftJoinAndSelect: jest.fn().mockReturnThis(),
+        orderBy: jest.fn().mockReturnThis(),
+        where: jest.fn().mockReturnThis(),
+        getOne: jest.fn().mockResolvedValue(product)
+      }
+
+      jest.spyOn(productRepository, 'createQueryBuilder')
+          .mockReturnValue(mockQueryBuilderProduct as any)
+
+      await expect(service.update("5c9d94ac-344f-4992-a714-4243b0787263", new UpdateProductDto())).rejects.toThrow(NotFoundException)
+    })
+
+    it('should throw an error if wants to update the category but it doesn`t exist', async () => {
+      const updateProductDto : UpdateProductDto = new UpdateProductDto();
+      updateProductDto.category = 'Category test'
+      const actualProduct: Product = new Product();
+
+      const mockQueryBuilderProduct = {
+        leftJoinAndSelect: jest.fn().mockReturnThis(),
+        orderBy: jest.fn().mockReturnThis(),
+        where: jest.fn().mockReturnThis(),
+        getOne: jest.fn().mockResolvedValue(actualProduct)
+      }
+
+      const mockQueryBuilderCategory = {
+        leftJoinAndSelect: jest.fn().mockReturnThis(),
+        orderBy: jest.fn().mockReturnThis(),
+        where: jest.fn().mockReturnThis(),
+        getOne: jest.fn().mockResolvedValue(undefined)
+      }
+
+      jest.spyOn(productRepository, 'createQueryBuilder')
+          .mockReturnValue(mockQueryBuilderProduct as any)
+
+      jest.spyOn(categoryRepository, 'createQueryBuilder')
+          .mockReturnValue(mockQueryBuilderCategory as any)
+
+      await expect(service.update("5c9d94ac-344f-4992-a714-4243b0787263", updateProductDto)).rejects.toThrow(BadRequestException)
+    })
+
+    it('should throw an error if wants to update the category and it exist but isDeleted is true', async () => {
+      const updateProductDto : UpdateProductDto = new UpdateProductDto();
+      updateProductDto.category = 'Category test'
+      const category : Category = new Category();
+      category.isDeleted = true;
+      const actualProduct: Product = new Product();
 
       const mockQueryBuilderProduct = {
         leftJoinAndSelect: jest.fn().mockReturnThis(),
@@ -523,52 +648,69 @@ describe('ProductService', () => {
       jest.spyOn(categoryRepository, 'createQueryBuilder')
           .mockReturnValue(mockQueryBuilderCategory as any)
 
-      jest.spyOn(mapper, 'toProductUpdate').mockReturnValue(updatedProduct);
-      jest.spyOn(mapper, 'toProductResponse').mockReturnValue(result);
-      jest.spyOn(productRepository, 'save').mockResolvedValue(updatedProduct);
-
-      expect(await service.update("5c9d94ac-344f-4992-a714-4243b0787263", updateProductDto)).toEqual(result)
-      expect(mapper.toProductResponse).toHaveBeenCalled()
-      expect(mapper.toProductUpdate).toHaveBeenCalled()
-      expect(productRepository.save).toHaveBeenCalled()
-      expect(notificationGateway.sendMessage).toHaveBeenCalled()
+      await expect(service.update("5c9d94ac-344f-4992-a714-4243b0787263", updateProductDto)).rejects.toThrow(BadRequestException)
     })
 
+    it('should throw an error if wants to update the provider but it doesn`t exist', async () => {
+      const updateProductDto : UpdateProductDto = new UpdateProductDto();
+      updateProductDto.provider = 'A29268166'
+      const actualProduct: Product = new Product();
 
+      const mockQueryBuilderProduct = {
+        leftJoinAndSelect: jest.fn().mockReturnThis(),
+        orderBy: jest.fn().mockReturnThis(),
+        where: jest.fn().mockReturnThis(),
+        getOne: jest.fn().mockResolvedValue(actualProduct)
+      }
 
+      const mockQueryBuilderProvider = {
+        leftJoinAndSelect: jest.fn().mockReturnThis(),
+        orderBy: jest.fn().mockReturnThis(),
+        where: jest.fn().mockReturnThis(),
+        getOne: jest.fn().mockResolvedValue(undefined)
+      }
 
+      jest.spyOn(productRepository, 'createQueryBuilder')
+          .mockReturnValue(mockQueryBuilderProduct as any)
 
+      jest.spyOn(providerRepository, 'createQueryBuilder')
+          .mockReturnValue(mockQueryBuilderProvider as any)
 
+      await expect(service.update("5c9d94ac-344f-4992-a714-4243b0787263", updateProductDto)).rejects.toThrow(BadRequestException)
+    })
 
+    it('should throw an error if wants to update the product name but is already another product with that name and isDeleted false', async () => {
+      const updateProductDto : UpdateProductDto = new UpdateProductDto();
+      updateProductDto.name = "Product Test"
+      const actualProduct: Product = new Product();
+      const otherProduct: Product = new Product();
+      otherProduct.name = "Product Test";
+      otherProduct.isDeleted = false;
+      otherProduct.id = "5c9d94ac-344f-4992-a714-4243b0787264"
 
+      const mockQueryBuilderProduct1 = {
+        leftJoinAndSelect: jest.fn().mockReturnThis(),
+        orderBy: jest.fn().mockReturnThis(),
+        where: jest.fn().mockReturnThis(),
+        getOne: jest.fn().mockResolvedValue(actualProduct)
+      }
 
+      const mockQueryBuilderProduct2 = {
+        leftJoinAndSelect: jest.fn().mockReturnThis(),
+        orderBy: jest.fn().mockReturnThis(),
+        where: jest.fn().mockReturnThis(),
+        getOne: jest.fn().mockResolvedValue(otherProduct)
+      }
 
+      jest.spyOn(productRepository, 'createQueryBuilder')
+          .mockReturnValue(mockQueryBuilderProduct1 as any)
 
+      jest.spyOn(productRepository, 'createQueryBuilder')
+          .mockReturnValue(mockQueryBuilderProduct2 as any)
 
-
+      await expect(service.update("5c9d94ac-344f-4992-a714-4243b0787263", updateProductDto)).rejects.toThrow(BadRequestException)
+    })
   })
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
   describe('remove', () => {
     it('should remove a product by updating isDeleted to true', async () => {
