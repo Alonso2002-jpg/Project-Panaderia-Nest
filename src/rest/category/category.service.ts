@@ -32,16 +32,16 @@ export class CategoryService {
   ) {}
   async create(createCategoryDto: CreateCategoryDto) {
     const findCategory = await this.categoryRepository.findOneBy({
-      nameCategory: createCategoryDto.nameCategory.toUpperCase(),
+      nameCategory: createCategoryDto.nameCategory,
     })
     if (findCategory) {
       throw new BadRequestException(
-        `Category already exists with name: ${createCategoryDto.nameCategory.toUpperCase()}`,
+        `Category already exists with name: ${createCategoryDto.nameCategory}`,
       )
     }
     await this.invalidateCacheKey('all_categories')
     const categorySaved = await this.categoryRepository.save(
-      this.categoryMapper.mapCategoria(createCategoryDto),
+      this.categoryMapper.mapCategory(createCategoryDto),
     )
     this.onChange(NotificationType.CREATE, categorySaved)
     return categorySaved
@@ -49,7 +49,7 @@ export class CategoryService {
 
   async findAll() {
     this.logger.log('Find All Categories')
-    const cache: Category = await this.cacheManager.get('all_categories')
+    const cache: Category[] = await this.cacheManager.get('all_categories')
     if (cache) {
       this.logger.log('Cache Hit')
       return cache
@@ -80,7 +80,7 @@ export class CategoryService {
   async update(id: number, updateCategoryDto: UpdateCategoryDto) {
     const categoryFind = await this.findOne(id)
     const categoryUpdated = await this.categoryRepository.save(
-      this.categoryMapper.mapCategoriaUpd(updateCategoryDto, categoryFind),
+      this.categoryMapper.mapCategoryUpd(updateCategoryDto, categoryFind),
     )
     await this.invalidateCacheKey('all_categories')
     await this.invalidateCacheKey(`category_${id}`)
