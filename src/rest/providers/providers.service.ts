@@ -19,6 +19,7 @@ import {
 import { hash } from 'typeorm/util/StringUtils'
 import { InjectRepository } from '@nestjs/typeorm'
 import { Repository } from 'typeorm'
+import { UpdateProvidersDto } from './dto/update-providers.dto'
 
 /**
  * Servicio de Providers a cargo de manejar las solicitudes de los proveedores
@@ -139,7 +140,6 @@ export class ProvidersService {
   /**
    * Actualizar un proveedor por su ID
    * @param {number} id
-   * @param {ProvidersEntity} Providers
    * @returns ProvidersEntity
    */
   @ApiOperation({
@@ -151,7 +151,7 @@ export class ProvidersService {
   @ApiResponse({ status: 404, description: 'Provider not found' })
   async update(
     id: number,
-    updatedProvider: ProvidersEntity,
+    updatedProvider: UpdateProvidersDto,
   ): Promise<ProvidersEntity | undefined> {
     this.logger.log(`Updating Provider with ID: ${id}`)
 
