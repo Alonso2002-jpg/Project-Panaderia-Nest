@@ -51,11 +51,10 @@ export class ResponsePersonalDto {
     @ApiProperty({example: true, description: 'Active status of the personal'})
     isActive: boolean;
 
-    // The userId can be uncommented if it should be part of the response
-    // /**
-    //  * The identifier for the user associated with the personal.
-    //  * @example 101
-    //  */
-    // @ApiProperty({ example: 101, description: 'User identifier associated with the personal' })
-    // userId: number;
+    /**
+     * The identifier for the user associated with the personal.
+     * @example 101
+     */
+    @ApiProperty({example: 101, description: 'User identifier associated with the personal'})
+    userId: number;
 }
