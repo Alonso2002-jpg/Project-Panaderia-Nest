@@ -1,15 +1,15 @@
 export class ResponsePersonalDto {
-  id: string
+    id: string
 
-  dni: string
+    dni: string
 
-  name: string
+    name: string
 
-  section: string
+    section: string
 
-  startDate: string
+    startDate: Date
 
-  isActive: boolean
+    isActive: boolean
 
-  userId: number
+    // userId: number
 }
