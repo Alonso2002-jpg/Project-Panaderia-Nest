@@ -6,16 +6,30 @@ import {
     HttpCode,
     Logger,
     Param,
-    ParseUUIDPipe,
     Patch,
     Post,
+    UseGuards,
     UsePipes,
     ValidationPipe
 } from '@nestjs/common';
 import {PersonalService} from './personal.service';
 import {CreatePersonalDto} from './dto/create-personal.dto';
 import {UpdatePersonalDto} from './dto/update-personal.dto';
-import {Paginate, PaginateQuery} from "nestjs-paginate";
+import {Paginate, Paginated, PaginateQuery} from 'nestjs-paginate'
+import {
+    ApiBadRequestResponse,
+    ApiBearerAuth,
+    ApiBody,
+    ApiNotFoundResponse,
+    ApiParam,
+    ApiQuery,
+    ApiResponse
+} from "@nestjs/swagger";
+import {CacheKey} from '@nestjs/cache-manager'
+import {ResponsePersonalDto} from "./dto/response-personal.dto";
+import {UuidValidatorPipe} from "../utils/pipes/uuid-validator.pipe";
+import {Roles, RolesAuthGuard} from "../auth/guards/rols-auth.guard";
+import {JwtAuthGuard} from "../auth/guards/jwt-auth.guard";
 
 /**
  * Controller that handles HTTP requests for the 'personal' resource.
@@ -32,10 +46,18 @@ export class PersonalController {
      * @param {CreatePersonalDto} createPersonalDto - DTO containing the data to create a new personal.
      * @returns The newly created personal record.
      */
+
     @Post()
+    @UseGuards(JwtAuthGuard, RolesAuthGuard)
+    @Roles('ADMIN')
+    @ApiBearerAuth()
     @HttpCode(201)
+    @ApiResponse({status: 201, description: 'Personal creadte .'})
+    @ApiBody({description: 'Personnel data to create', type: CreatePersonalDto})
+    @ApiBadRequestResponse({description: 'Invalid data'})
+    @ApiBadRequestResponse({description: 'Invalid data category'})
     @UsePipes(new ValidationPipe({transform: true}))
-    create(@Body() createPersonalDto: CreatePersonalDto) {
+    create(@Body(new ValidationPipe()) createPersonalDto: CreatePersonalDto) {
         return this.personalService.create(createPersonalDto);
     }
 
@@ -45,6 +67,47 @@ export class PersonalController {
      * @returns A list of personal records.
      */
     @Get()
+    @UseGuards(JwtAuthGuard, RolesAuthGuard)
+    @Roles('ADMIN')
+    @CacheKey('all_personal')
+    @ApiResponse({
+        status: 200,
+        description:
+            'Paginated staff list. You can filter by limit, page sortBy, filter and search',
+        type: Paginated<ResponsePersonalDto>,
+    })
+    @ApiQuery({
+        description:
+            'Filter by limit per page',
+        name: 'limit',
+        required: false,
+        type: Number,
+    })
+    @ApiQuery({
+        description: 'Filter for page',
+        name: 'page',
+        required: false,
+        type: Number,
+    })
+    @ApiQuery({
+        description:
+            'Sort filter: field:ASC|DESC',
+        name: 'sortBy',
+        required: false,
+        type: String,
+    })
+    @ApiQuery({
+        description: 'Search filter: filter.field = $eq:value',
+        name: 'filter',
+        required: false,
+        type: String,
+    })
+    @ApiQuery({
+        description: 'Search filter: search = valor',
+        name: 'search',
+        required: false,
+        type: String,
+    })
     @HttpCode(200)
     async findAll(@Paginate() query: PaginateQuery) {
         return this.personalService.findAll(query);
@@ -56,8 +119,27 @@ export class PersonalController {
      * @returns The personal record with the given UUID.
      */
     @Get(':id')
+    @UseGuards(JwtAuthGuard, RolesAuthGuard)
+    @Roles('ADMIN')
+    @ApiResponse({
+        status: 200,
+        description: 'personal not found',
+        type: ResponsePersonalDto,
+    })
+    @ApiParam({
+        name: 'id',
+        description: 'Personnel identifier',
+        type: Number,
+    })
+    @ApiNotFoundResponse({
+        description: 'personal not found',
+    })
+    @ApiBadRequestResponse({
+        description:
+            'The product id is not valid',
+    })
     @HttpCode(200)
-    findOne(@Param('id') id: string) {
+    findOne(@Param('id', new UuidValidatorPipe()) id: string) {
         this.logger.log(`Searching for staff with id: ${id}`);
         return this.personalService.findOne(id);
     }
@@ -69,10 +151,38 @@ export class PersonalController {
      * @returns The updated personal record.
      */
     @Patch(':id')
+    @UseGuards(JwtAuthGuard, RolesAuthGuard)
+    @Roles('ADMIN')
+    @ApiResponse({
+        status: 200,
+        description: 'personal updated',
+        type: ResponsePersonalDto,
+    })
+    @ApiParam({
+        name: 'id',
+        description: 'Personnel identifier',
+        type: Number,
+    })
+    @ApiBody({
+        description:
+            'Product data to update',
+        type: UpdatePersonalDto,
+    })
+    @ApiNotFoundResponse({
+        description: 'personal not found',
+    })
+    @ApiBadRequestResponse({
+        description:
+            'Some of the fields are not valid according to the DTO specification',
+    })
+
+    @ApiBadRequestResponse({
+        description: 'The category does not exist or is not valid',
+    })
     @UsePipes(new ValidationPipe({transform: true, whitelist: true}))
     update(
-        @Param('id') id: string,
-        @Body() updatePersonalDto: UpdatePersonalDto,
+        @Param('id', new UuidValidatorPipe()) id: string,
+        @Body(new ValidationPipe()) updatePersonalDto: UpdatePersonalDto,
     ) {
         this.logger.log(`Updating staff with id: ${id}, Data: ${JSON.stringify(updatePersonalDto)}`);
         return this.personalService.update(id, updatePersonalDto);
@@ -83,8 +193,25 @@ export class PersonalController {
      * @param {string} id - The UUID of the personal record to remove.
      */
     @Delete(':id')
+    @UseGuards(JwtAuthGuard, RolesAuthGuard)
+    @Roles('ADMIN')
+    @ApiResponse({
+        status: 204,
+        description: 'personal deleted',
+    })
+    @ApiParam({
+        name: 'id',
+        description: 'Personnel identifier',
+        type: Number,
+    })
+    @ApiNotFoundResponse({
+        description: 'Personal not found',
+    })
+    @ApiBadRequestResponse({
+        description: 'The staff id is not valid',
+    })
     @HttpCode(204)
-    async remove(@Param('id', ParseUUIDPipe) id: string) {
+    async remove(@Param('id', new UuidValidatorPipe()) id: string) {
         try {
             await this.personalService.removeSoft(id);
             this.logger.log(`Deleted staff with id: ${id}`);
