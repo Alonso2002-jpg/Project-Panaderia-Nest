@@ -111,8 +111,8 @@ export class ProvidersController {
    * @param {ProvidersEntity} Providers Proveedor entidad
    * @returns {Promise<ProvidersEntity>} Proveedor entidad
    */
-  //@UseGuards(JwtAuthGuard, RolesAuthGuard)
-  //@Roles('ADMIN')
+  @UseGuards(JwtAuthGuard, RolesAuthGuard)
+  @Roles('ADMIN')
   @Put(':id')
   @HttpCode(200)
   @ApiOperation({
