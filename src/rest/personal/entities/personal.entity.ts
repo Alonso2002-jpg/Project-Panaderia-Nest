@@ -1,15 +1,16 @@
 import {
-  Column,
-  CreateDateColumn,
-  Entity,
-  JoinColumn,
-  ManyToOne,
-  PrimaryGeneratedColumn,
-  UpdateDateColumn,
+    Column,
+    CreateDateColumn,
+    Entity,
+    JoinColumn,
+    ManyToOne,
+    OneToOne,
+    PrimaryGeneratedColumn,
+    UpdateDateColumn,
 } from 'typeorm'
-import { Category } from '../../category/entities/category.entity'
-//import { User } from './user.entity'
-// import { Category } from './category.entity'
+import {Category} from '../../category/entities/category.entity'
+import {User} from "../../user/entities/user.entity";
+
 
 /**
  * Personal entity representing a record of an employee or staff member.
@@ -70,13 +71,12 @@ export class PersonalEntity {
     @Column({name: 'active', default: true})
     isActive: boolean;
 
-    // Uncomment if a User entity relationship is established
-    // /**
-    //  * The user account associated with the personal.
-    //  */
-    // @OneToOne((type) => User)
-    // @JoinColumn({ name: 'user_id' })
-    // user: User;
+    /**
+     * The user account associated with the personal.
+     */
+    @OneToOne((type) => User)
+    @JoinColumn({name: 'user_id'})
+    user: User;
 
     /**
      * The category or section within the company to which the personal belongs.
