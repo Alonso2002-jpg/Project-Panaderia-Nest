@@ -8,8 +8,8 @@ import {
   Body,
   HttpCode,
   UseInterceptors,
-  Logger,
-} from '@nestjs/common'
+  Logger, UseGuards
+} from "@nestjs/common";
 import { ProvidersService } from './providers.service'
 import { ProvidersEntity } from './entities/providers.entity'
 import {
@@ -24,6 +24,8 @@ import {
 import { CacheInterceptor, CacheKey, CacheTTL } from '@nestjs/common/cache'
 import { Paginate, PaginateQuery } from 'nestjs-paginate'
 import { UpdateProvidersDto } from './dto/update-providers.dto'
+import { Roles, RolesAuthGuard } from "../auth/guards/rols-auth.guard";
+import { JwtAuthGuard } from "../auth/guards/jwt-auth.guard";
 
 @ApiTags('providers')
 @UseInterceptors(CacheInterceptor)
@@ -87,8 +89,8 @@ export class ProvidersController {
    * @param {ProvidersEntity} Providers Providers entity
    * @returns {Promise<ProvidersEntity>} Providers entity
    */
-  //@UseGuards(JwtAuthGuard, RolesAuthGuard)
-  //@Roles('ADMIN')
+  @UseGuards(JwtAuthGuard, RolesAuthGuard)
+  @Roles('ADMIN')
   @Post()
   @HttpCode(201)
   @ApiOperation({
@@ -136,8 +138,8 @@ export class ProvidersController {
    */
   @Delete(':id')
   @HttpCode(204)
-  //@UseGuards(JwtAuthGuard, RolesAuthGuard)
-  //@Roles('ADMIN')
+  @UseGuards(JwtAuthGuard, RolesAuthGuard)
+  @Roles('ADMIN')
   @ApiBearerAuth()
   @ApiOperation({
     summary: 'Delete a provider',
