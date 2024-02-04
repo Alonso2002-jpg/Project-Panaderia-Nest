@@ -24,6 +24,7 @@ describe('PersonalController', () => {
                 provide: PersonalService,
                 useValue: productosServiceMock
             }],
+
         }).compile();
 
         controller = module.get<PersonalController>(PersonalController);
@@ -137,6 +138,7 @@ describe('PersonalController', () => {
                 jest.spyOn(service, 'removeSoft').mockRejectedValue(new NotFoundException());
                 await expect(controller.remove(id)).rejects.toThrow(NotFoundException);
             });
+
         });
 
     })
