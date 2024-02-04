@@ -22,14 +22,14 @@ describe('Mapper', () => {
 
   describe('should be mapped to a category', () => {
     it('should be mapped to a category from create dto', () => {
-      const category = provider.mapCategoria(new CreateCategoryDto())
+      const category = provider.mapCategory(new CreateCategoryDto())
 
       expect(category).toBeDefined()
       expect(category).toBeInstanceOf(Category)
     })
 
     it('should be mapped to a category from update DTO', () => {
-      const category = provider.mapCategoriaUpd(
+      const category = provider.mapCategoryUpd(
         new UpdateCategoryDto(),
         new Category(),
       )

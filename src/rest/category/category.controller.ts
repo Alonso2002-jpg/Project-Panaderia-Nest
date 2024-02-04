@@ -31,13 +31,13 @@ export class CategoryController {
 
   @Get()
   async findAll() {
-    return await this.categoryService
-      .findAll()
-      .then((res) => res.map((c) => this.categoryMapper.mapResponse(c)))
+    return this.categoryMapper.mapResponseList(
+      await this.categoryService.findAll(),
+    )
   }
 
   @Get(':id')
-  async sfindOne(@Param('id', ParseIntPipe) id: number) {
+  async findOne(@Param('id', ParseIntPipe) id: number) {
     return this.categoryMapper.mapResponse(
       await this.categoryService.findOne(id),
     )

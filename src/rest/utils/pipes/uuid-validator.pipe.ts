@@ -1,9 +1,14 @@
-import { ArgumentMetadata, BadRequestException, Injectable, ParseUUIDPipe, PipeTransform } from '@nestjs/common';
+import {
+  ArgumentMetadata,
+  BadRequestException,
+  Injectable,
+  ParseUUIDPipe,
+  PipeTransform,
+} from '@nestjs/common'
 
 @Injectable()
 export class UuidValidatorPipe implements PipeTransform {
-    constructor(private errorMessage = 'Invalid or incorrectly formatted UUID') {
-    }
+  constructor(private errorMessage = 'Invalid or incorrectly formatted UUID') {}
   async transform(id: string, metadata: ArgumentMetadata) {
     const uuidPipe = new ParseUUIDPipe()
     try {
@@ -11,5 +16,5 @@ export class UuidValidatorPipe implements PipeTransform {
     } catch (error) {
       throw new BadRequestException(this.errorMessage)
     }
-    }
+  }
 }

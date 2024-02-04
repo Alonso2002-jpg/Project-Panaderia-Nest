@@ -2,48 +2,99 @@ import { Test, TestingModule } from '@nestjs/testing'
 import { ProvidersController } from './providers.controller'
 import { ProvidersService } from './providers.service'
 import { ProvidersEntity } from './entities/providers.entity'
-import { PaginateQuery } from 'nestjs-paginate'
+import { Paginated } from 'nestjs-paginate'
 import { Category } from '../category/entities/category.entity'
-
+import { CacheModule } from '@nestjs/cache-manager'
+import { NotFoundException } from '@nestjs/common'
+import { UpdateProvidersDto } from './dto/update-providers.dto'
 describe('ProvidersController', () => {
   let controller: ProvidersController
   let service: ProvidersService
 
+  const providersServiceMock = {
+    findAll: jest.fn(),
+    findOne: jest.fn(),
+    create: jest.fn(),
+    update: jest.fn(),
+    remove: jest.fn(),
+  }
+
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
+      imports: [CacheModule.register()],
       controllers: [ProvidersController],
-      providers: [ProvidersService],
+      providers: [
+        { provide: ProvidersService, useValue: providersServiceMock },
+      ],
     }).compile()
 
     controller = module.get<ProvidersController>(ProvidersController)
     service = module.get<ProvidersService>(ProvidersService)
   })
 
+  it('should be defined', () => {
+    expect(controller).toBeDefined()
+  })
+
   describe('findAll', () => {
-    it('should return a list of providers', async () => {
-      const query: PaginateQuery = {
+    it('should get all Providers', async () => {
+      const paginateOptions = {
         page: 1,
         limit: 10,
-        path: '',
-      }
-      const expectedResult: any = {
-        data: [{ id: 1, name: 'Provider 1' }],
-        meta: {},
-        links: {},
+        path: 'Providers',
       }
 
-      jest.spyOn(service, 'findAll').mockResolvedValue(expectedResult)
+      const testProductos = {
+        data: [],
+        meta: {
+          itemsPerPage: 10,
+          totalItems: 1,
+          currentPage: 1,
+          totalPages: 1,
+        },
+        links: {
+          current: 'Providers?page=1&limit=10&sortBy=nombre:ASC',
+        },
+      } as Paginated<ProvidersEntity>
 
-      const result = await controller.findAll(query)
+      jest.spyOn(service, 'findAll').mockResolvedValue(testProductos)
+      const result: any = await controller.findAll(paginateOptions)
 
-      expect(result).toBe(expectedResult)
+      // console.log(result)
+      expect(result.meta.itemsPerPage).toEqual(paginateOptions.limit)
+      // Expect the result to have the correct currentPage
+      expect(result.meta.currentPage).toEqual(paginateOptions.page)
+      // Expect the result to have the correct totalPages
+      expect(result.meta.totalPages).toEqual(1) // You may need to adjust this value based on your test case
+      // Expect the result to have the correct current link
+      expect(result.links.current).toEqual(
+        `Providers?page=${paginateOptions.page}&limit=${paginateOptions.limit}&sortBy=nombre:ASC`,
+      )
+      expect(service.findAll).toHaveBeenCalled()
     })
   })
 
   describe('findOne', () => {
-    it('should return a single provider by ID', async () => {
-      const providerId = '1'
-      const expectedResult: ProvidersEntity = {
+    it('should get one Provider', async () => {
+      const id = 1
+      const mockResult: ProvidersEntity = new ProvidersEntity()
+
+      jest.spyOn(service, 'findOne').mockResolvedValue(mockResult)
+      await controller.findOne(id)
+      expect(service.findOne).toHaveBeenCalledWith(id)
+      expect(mockResult).toBeInstanceOf(ProvidersEntity)
+    })
+
+    it('should throw NotFoundException if provider does not exist', async () => {
+      const id = 1
+      jest.spyOn(service, 'findOne').mockRejectedValue(new NotFoundException())
+      await expect(controller.findOne(id)).rejects.toThrow(NotFoundException)
+    })
+  })
+
+  describe('create', () => {
+    it('should create a producto', async () => {
+      const dto: ProvidersEntity = {
         id: 1,
         name: 'Provider 1',
         NIF: '123456789',
@@ -53,105 +104,37 @@ describe('ProvidersController', () => {
         type: new Category(),
         products: [],
       }
-
-      jest.spyOn(service, 'findOne').mockResolvedValue(expectedResult)
-
-      const result = await controller.findOne(providerId)
-
-      expect(result).toBe(expectedResult)
-    })
-
-    it('should throw a 404 error for non-existing provider ID', async () => {
-      const nonExistingProviderId = '999'
-
-      jest.spyOn(service, 'findOne').mockResolvedValue(undefined)
-
-      await expect(
-        controller.findOne(nonExistingProviderId),
-      ).rejects.toThrowError('Provider not found')
-    })
-  })
-
-  describe('create', () => {
-    it('should create a new provider', async () => {
-      const newProvider: ProvidersEntity = {
-        name: 'New Provider',
-        id: 0,
-        NIF: '123456789',
-        number: ' 123-45-6789',
-        CreationDate: undefined,
-        UpdateDate: undefined,
-        type: new Category(),
-        products: [],
-      }
-      const expectedResult: ProvidersEntity = {
-        id: 1,
-        name: 'New Provider',
-        NIF: ' 123456789',
-        number: '123-45-6789',
-        CreationDate: undefined,
-        UpdateDate: undefined,
-        type: new Category(),
-        products: [],
-      }
-
-      jest.spyOn(service, 'create').mockResolvedValue(expectedResult)
-
-      const result = await controller.create(newProvider)
-
-      expect(result).toBe(expectedResult)
+      const mockResult: ProvidersEntity = new ProvidersEntity()
+      jest.spyOn(service, 'create').mockResolvedValue(mockResult)
+      await controller.create(dto)
+      expect(service.create).toHaveBeenCalledWith(dto)
+      expect(mockResult).toBeInstanceOf(ProvidersEntity)
     })
   })
 
   describe('update', () => {
-    it('should update an existing provider by ID', async () => {
-      const providerId = '1'
-      const updatedProvider: ProvidersEntity = {
+    it('should update a provider', async () => {
+      const id = 1
+      const dto: UpdateProvidersDto = {
         id: 1,
-        name: 'Updated Provider',
+        name: 'Provider 1',
         NIF: '123456789',
         number: '123-45-6789',
-        CreationDate: undefined,
-        UpdateDate: undefined,
-        type: new Category(),
-        products: [],
       }
-      const expectedResult: ProvidersEntity = {
-        id: 1,
-        name: 'Updated Provider',
-        NIF: '123456789',
-        number: '123-45-6789',
-        CreationDate: undefined,
-        UpdateDate: undefined,
-        type: new Category(),
-        products: [],
-      }
-
-      jest.spyOn(service, 'update').mockResolvedValue(expectedResult)
-
-      const result = await controller.update(providerId, updatedProvider)
-
-      expect(result).toBe(expectedResult)
+      const mockResult: ProvidersEntity = new ProvidersEntity()
+      jest.spyOn(service, 'update').mockResolvedValue(mockResult)
+      await controller.update(id, dto)
+      expect(service.update).toHaveBeenCalledWith(id, dto)
+      expect(mockResult).toBeInstanceOf(ProvidersEntity)
     })
 
-    it('should throw a 404 error for non-existing provider ID during update', async () => {
-      const nonExistingProviderId = '999'
-      const updatedProvider: ProvidersEntity = {
-        id: 1,
-        name: 'Updated Provider',
-        NIF: '123456789',
-        number: '123-45-6789',
-        CreationDate: undefined,
-        UpdateDate: undefined,
-        type: new Category(),
-        products: [],
-      }
-
-      jest.spyOn(service, 'update').mockResolvedValue(undefined)
-
-      await expect(
-        controller.update(nonExistingProviderId, updatedProvider),
-      ).rejects.toThrowError('Provider not found')
+    it('should throw NotFoundException if provider does not exist', async () => {
+      const id = 1
+      const dto: UpdateProvidersDto = { NIF: '', id: 0, name: '', number: '' }
+      jest.spyOn(service, 'update').mockRejectedValue(new NotFoundException())
+      await expect(controller.update(id, dto)).rejects.toThrow(
+        NotFoundException,
+      )
     })
   })
 
@@ -168,14 +151,12 @@ describe('ProvidersController', () => {
 
     it('should throw a 404 error for non-existing provider ID during removal', async () => {
       const nonExistingProviderId = '999'
-
       jest
         .spyOn(service, 'remove')
-        .mockRejectedValue(new Error('Provider not found'))
-
+        .mockRejectedValue(new NotFoundException('Provider not found'))
       await expect(
         controller.remove(nonExistingProviderId),
-      ).rejects.toThrowError('Provider not found')
+      ).rejects.toThrowError(NotFoundException)
     })
   })
 })

@@ -6,10 +6,12 @@ import {
   Delete,
   Param,
   Body,
-  HttpCode, UseInterceptors, Logger
+  HttpCode,
+  UseInterceptors,
+  Logger, UseGuards
 } from "@nestjs/common";
-import { ProvidersService } from './providers.service';
-import { ProvidersEntity } from './entities/providers.entity';
+import { ProvidersService } from './providers.service'
+import { ProvidersEntity } from './entities/providers.entity'
 import {
   ApiOperation,
   ApiResponse,
@@ -17,18 +19,22 @@ import {
   ApiParam,
   ApiBadRequestResponse,
   ApiInternalServerErrorResponse,
-} from '@nestjs/swagger';
-import { CacheInterceptor, CacheKey, CacheTTL } from "@nestjs/common/cache";
-import { Paginate, PaginateQuery } from "nestjs-paginate";
+  ApiBearerAuth,
+} from '@nestjs/swagger'
+import { CacheInterceptor, CacheKey, CacheTTL } from '@nestjs/common/cache'
+import { Paginate, PaginateQuery } from 'nestjs-paginate'
+import { UpdateProvidersDto } from './dto/update-providers.dto'
+import { Roles, RolesAuthGuard } from "../auth/guards/rols-auth.guard";
+import { JwtAuthGuard } from "../auth/guards/jwt-auth.guard";
 
 @ApiTags('providers')
-//@UseInterceptors(CacheInterceptor)
+@UseInterceptors(CacheInterceptor)
 @Controller('Providers')
 /**
  * Controlador de Proveedores a cargo de manejar con las solicitudes de proveedores
  */
 export class ProvidersController {
-  private readonly logger: Logger = new Logger(ProvidersController.name);
+  private readonly logger: Logger = new Logger(ProvidersController.name)
 
   /**
    * Constructor metodo para ProvidersController
@@ -40,8 +46,8 @@ export class ProvidersController {
    * findAll metodo para devolver todos los Proveedores
    * @returns {Promise<ProvidersEntity[]>} Lista de proveedores
    */
-  //@CacheKey('all_providers')
-  //@CacheTTL(30)
+  @CacheKey('all_providers')
+  @CacheTTL(30)
   @Get()
   @HttpCode(200)
   @ApiOperation({
@@ -73,9 +79,9 @@ export class ProvidersController {
   @ApiParam({ name: 'id', description: 'Provider ID' })
   @ApiResponse({ status: 200, description: 'Success', type: ProvidersEntity })
   @ApiResponse({ status: 404, description: 'Provider not found' })
-  findOne(@Param('id') id: string): Promise<ProvidersEntity> {
-    this.logger.log(`Obtaining provider with ID: ${id}`);
-    return this.ProvidersService.findOne(+id);
+  findOne(@Param('id') id: number): Promise<ProvidersEntity> {
+    this.logger.log(`Obtaining provider with ID: ${id}`)
+    return this.ProvidersService.findOne(+id)
   }
 
   /**
@@ -83,6 +89,8 @@ export class ProvidersController {
    * @param {ProvidersEntity} Providers Providers entity
    * @returns {Promise<ProvidersEntity>} Providers entity
    */
+  @UseGuards(JwtAuthGuard, RolesAuthGuard)
+  @Roles('ADMIN')
   @Post()
   @HttpCode(201)
   @ApiOperation({
@@ -93,8 +101,8 @@ export class ProvidersController {
   @ApiBadRequestResponse({ description: 'Bad request' })
   @ApiInternalServerErrorResponse({ description: 'Internal server error' })
   create(@Body() Providers: ProvidersEntity): Promise<ProvidersEntity> {
-    this.logger.log('Creating a new provider');
-    return this.ProvidersService.create(Providers);
+    this.logger.log('Creating a new provider')
+    return this.ProvidersService.create(Providers)
   }
 
   /**
@@ -103,6 +111,8 @@ export class ProvidersController {
    * @param {ProvidersEntity} Providers Proveedor entidad
    * @returns {Promise<ProvidersEntity>} Proveedor entidad
    */
+  @UseGuards(JwtAuthGuard, RolesAuthGuard)
+  @Roles('ADMIN')
   @Put(':id')
   @HttpCode(200)
   @ApiOperation({
@@ -114,11 +124,11 @@ export class ProvidersController {
   @ApiResponse({ status: 404, description: 'Provider not found' })
   @ApiBadRequestResponse({ description: 'Bad request' })
   update(
-    @Param('id') id: string,
-    @Body() Providers: ProvidersEntity,
+    @Param('id') id: number,
+    @Body() Providers: UpdateProvidersDto,
   ): Promise<ProvidersEntity> {
-    this.logger.log(`Updating provider with ID: ${id}`);
-    return this.ProvidersService.update(+id, Providers);
+    this.logger.log(`Updating provider with ID: ${id}`)
+    return this.ProvidersService.update(+id, Providers)
   }
 
   /**
@@ -128,6 +138,9 @@ export class ProvidersController {
    */
   @Delete(':id')
   @HttpCode(204)
+  @UseGuards(JwtAuthGuard, RolesAuthGuard)
+  @Roles('ADMIN')
+  @ApiBearerAuth()
   @ApiOperation({
     summary: 'Delete a provider',
     description: 'Delete a provider by its ID',
@@ -136,7 +149,7 @@ export class ProvidersController {
   @ApiResponse({ status: 204, description: 'No content' })
   @ApiResponse({ status: 404, description: 'Provider not found' })
   remove(@Param('id') id: string): Promise<void> {
-    this.logger.log(`Deleting provider with ID: ${id}`);
-    return this.ProvidersService.remove(+id);
+    this.logger.log(`Deleting provider with ID: ${id}`)
+    return this.ProvidersService.remove(+id)
   }
 }
