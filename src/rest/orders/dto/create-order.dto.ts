@@ -72,7 +72,7 @@ export class ClientDto {
 
 export class OrderLineDto {
     @ApiProperty({example: 'd69cf3db-b77d-4181-b3cd-5ca8107fb6a9', description: 'Product ID', maxLength: 100, required: true})
-    @IsNumber()
+    @IsString()
     @IsNotEmpty()
     idProduct: string
 
