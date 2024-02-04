@@ -8,6 +8,7 @@ import {InjectRepository} from "@nestjs/typeorm";
 import {Product} from "../product/entities/product.entity";
 import { Repository } from 'typeorm'
 import { OrderMapper } from './mappers/orders.mapper'
+import {User} from "../user/entities/user.entity";
 export const OrderByValues: string[] = ['_id', 'idUser'];
 export const OrderValues: string[] = ['asc', 'desc'];
 

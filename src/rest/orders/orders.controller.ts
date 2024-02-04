@@ -1,27 +1,13 @@
-import {
-  Body,
-  Controller,
-  DefaultValuePipe,
-  Delete,
-  Get,
-  HttpCode,
-  Logger,
-  Param,
-  ParseIntPipe, Patch,
-  Post,
-  Put,
-  Query,
-  UseGuards, UseInterceptors
-} from "@nestjs/common";
+import { Body, Controller, DefaultValuePipe, Delete, Get, HttpCode, Logger, Param, ParseIntPipe, Post, Put, Query, UseGuards, UseInterceptors } from '@nestjs/common'
 import { OrdersService } from './orders.service';
 import { CreateOrderDto } from './dto/create-order.dto';
 import { UpdateOrderDto } from './dto/update-order.dto';
 import { OrderValidatePipe } from './pipes/order-validate.pipe'
 import { IdValidatePipe } from './pipes/id-validate.pipe'
-import { ApiExcludeController } from "@nestjs/swagger";
+import { ApiExcludeController } from '@nestjs/swagger'
+import { CacheInterceptor } from '@nestjs/cache-manager'
+import { Roles, RolesAuthGuard } from '../auth/guards/rols-auth.guard'
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard'
-import { RolesAuthGuard } from '../auth/guards/roles-auth.guard'
-import { CacheInterceptor } from '@nestjs/cache-manager';
 
 @Controller('orders')
 @UseInterceptors(CacheInterceptor)
@@ -91,4 +77,3 @@ export class OrdersController {
     await this.ordersService.remove(id)
   }
 }
-
