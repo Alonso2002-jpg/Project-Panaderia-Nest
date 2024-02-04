@@ -1,14 +1,14 @@
 import {INestApplication, NotFoundException} from "@nestjs/common";
-import {ResponsePersonalDto} from "../../src/rest/personal/dto/response-personal.dto";
-import {CreatePersonalDto} from "../../src/rest/personal/dto/create-personal.dto";
-import {UpdatePersonalDto} from "../../src/rest/personal/dto/update-personal.dto";
+import {ResponsePersonalDto} from "../../../src/rest/personal/dto/response-personal.dto";
+import {CreatePersonalDto} from "../../../src/rest/personal/dto/create-personal.dto";
+import {UpdatePersonalDto} from "../../../src/rest/personal/dto/update-personal.dto";
 import {Test, TestingModule} from "@nestjs/testing";
-import {PersonalController} from "../../src/rest/personal/personal.controller";
-import {PersonalService} from "../../src/rest/personal/personal.service";
+import {PersonalController} from "../../../src/rest/personal/personal.controller";
+import {PersonalService} from "../../../src/rest/personal/personal.service";
 import * as request from 'supertest'
 import {CacheModule} from "@nestjs/common/cache";
-import {RolesAuthGuard} from "../../src/rest/auth/guards/rols-auth.guard";
-import {JwtAuthGuard} from "../../src/rest/auth/guards/jwt-auth.guard";
+import {RolesAuthGuard} from "../../../src/rest/auth/guards/rols-auth.guard";
+import {JwtAuthGuard} from "../../../src/rest/auth/guards/jwt-auth.guard";
 
 describe('PersonalController (e2e)', () => {
     let app: INestApplication
