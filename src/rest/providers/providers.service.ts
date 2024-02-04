@@ -29,6 +29,7 @@ import { UpdateProvidersDto } from './dto/update-providers.dto'
 @Injectable()
 export class ProvidersService {
   constructor(
+    private readonly providersMapper: ProvidersMapper,
     /**
      * Instancia de Cache
      */
