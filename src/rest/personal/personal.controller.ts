@@ -58,9 +58,9 @@ export class PersonalController {
 
     @Delete(':id')
     @HttpCode(204)
-    remove(@Param('id', ParseUUIDPipe) id: string) {
+    async remove(@Param('id', ParseUUIDPipe) id: string) {
         try {
-            this.personalService.removeSoft(id)
+            await this.personalService.removeSoft(id)
             this.logger.log(`Deleting staff with id: ${id}`)
         } catch (error) {
             this.logger.error(`Staff with id: ${id} does not exist`, error.stack)
