@@ -44,7 +44,7 @@ describe('ProvidersController', () => {
         path: 'Providers',
       }
 
-      const testProductos = {
+      const testProviders = {
         data: [],
         meta: {
           itemsPerPage: 10,
@@ -57,7 +57,7 @@ describe('ProvidersController', () => {
         },
       } as Paginated<ProvidersEntity>
 
-      jest.spyOn(service, 'findAll').mockResolvedValue(testProductos)
+      jest.spyOn(service, 'findAll').mockResolvedValue(testProviders)
       const result: any = await controller.findAll(paginateOptions)
 
       // console.log(result)
@@ -93,7 +93,7 @@ describe('ProvidersController', () => {
   })
 
   describe('create', () => {
-    it('should create a producto', async () => {
+    it('should create a provider', async () => {
       const dto: ProvidersEntity = {
         id: 1,
         name: 'Provider 1',
