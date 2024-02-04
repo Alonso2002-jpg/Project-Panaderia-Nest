@@ -11,7 +11,7 @@ import { ApiProperty } from '@nestjs/swagger';
  */
 export class ProvidersResponseDto {
   @ApiProperty({ type: 'bigint', description: 'The id of the provider' })
-  id: bigint;
+  id: number;
 
   @ApiProperty({ description: 'The NIF of the provider' })
   NIF: string;

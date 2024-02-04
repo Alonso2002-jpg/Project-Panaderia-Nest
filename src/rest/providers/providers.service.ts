@@ -1,12 +1,6 @@
 import { Inject, Injectable, Logger } from '@nestjs/common'
 import { ProvidersEntity } from './entities/providers.entity'
-import {
-  ApiTags,
-  ApiOperation,
-  ApiParam,
-  ApiResponse,
-  ApiInternalServerErrorResponse,
-} from '@nestjs/swagger'
+import { ApiTags, ApiOperation, ApiParam, ApiResponse } from '@nestjs/swagger'
 import { ProvidersMapper } from './mapper/providersMapper'
 import { CACHE_MANAGER } from '@nestjs/common/cache'
 import { Cache } from 'cache-manager'
@@ -20,6 +14,12 @@ import { hash } from 'typeorm/util/StringUtils'
 import { InjectRepository } from '@nestjs/typeorm'
 import { Repository } from 'typeorm'
 import { UpdateProvidersDto } from './dto/update-providers.dto'
+import {
+  Notification,
+  NotificationType,
+} from '../../websockets/notification/model/notification.model'
+import { NotificationGateway } from '../../websockets/notification/notification.gateway'
+import { ProvidersResponseDto } from './dto/response-providers.dto'
 
 /**
  * Servicio de Providers a cargo de manejar las solicitudes de los proveedores
@@ -29,6 +29,13 @@ import { UpdateProvidersDto } from './dto/update-providers.dto'
 @Injectable()
 export class ProvidersService {
   constructor(
+    /**
+     * Instancia de Notification
+     */
+    private readonly notificationGateway: NotificationGateway,
+    /**
+     * Instancia de ProvidersMapper
+     */
     private readonly providersMapper: ProvidersMapper,
     /**
      * Instancia de Cache
@@ -62,7 +69,6 @@ export class ProvidersService {
     type: ProvidersEntity,
     isArray: true,
   })
-  @ApiInternalServerErrorResponse({ description: 'Internal server error' })
   async findAll(query: NonNullable<unknown>) {
     this.logger.log('Finding all providers')
     const cache = await this.cacheManager.get(
@@ -136,6 +142,7 @@ export class ProvidersService {
     const newProviders = this.ProvidersRepository.create(Providers)
     newProviders.id = await this.getNextId()
     const savedProviders = await this.ProvidersRepository.save(newProviders)
+    this.onChange(NotificationType.CREATE, savedProviders)
     return savedProviders
   }
   /**
@@ -153,24 +160,22 @@ export class ProvidersService {
   async update(
     id: number,
     updatedProvider: UpdateProvidersDto,
-  ): Promise<ProvidersEntity | undefined> {
+  ): Promise<ProvidersEntity> {
     this.logger.log(`Updating Provider with ID: ${id}`)
-
     const existingProvider = await this.ProvidersRepository.findOne({
       where: { id },
     })
-
     if (existingProvider) {
       // Si encontramos el proveedor, actualizamos sus propiedades
-      await this.ProvidersRepository.save({
+      const updatedEntity = await this.ProvidersRepository.save({
         ...existingProvider,
         ...updatedProvider,
       })
-
-      return existingProvider
+      this.onChange(NotificationType.UPDATE, updatedEntity)
+      return updatedEntity
     }
-    // Si no encontramos el proveedor, devolvemos undefined
-    return undefined
+    // Si no encontramos el proveedor, podrías lanzar una excepción o manejar de otra manera.
+    throw new Error(`No se encontró el proveedor con ID ${id}`)
   }
 
   /**
@@ -186,11 +191,20 @@ export class ProvidersService {
   @ApiParam({ name: 'id', description: 'Provider ID' })
   @ApiResponse({ status: 204, description: 'No content' })
   @ApiResponse({ status: 404, description: 'Provider not found' })
-  @ApiInternalServerErrorResponse({ description: 'Internal server error' })
   async remove(id: number): Promise<void> {
     this.logger.log(`Deleting Providers with ID: ${id}`)
-    await this.ProvidersRepository.delete(id)
+    const providerToDelete = await this.ProvidersRepository.findOne({
+      where: { id },
+    })
+
+    if (providerToDelete) {
+      this.onChange(NotificationType.DELETE, providerToDelete)
+      await this.ProvidersRepository.delete(id)
+    } else {
+      this.logger.warn(`Provider with ID ${id} not found.`)
+    }
   }
+
   /**
    * Consigue el siguiente id disponible
    * @returns number
@@ -203,5 +217,15 @@ export class ProvidersService {
     })
     const maxId = providers.length > 0 ? providers[0].id : 0
     return maxId + 1
+  }
+  onChange(type: NotificationType, data: ProvidersEntity) {
+    const dataToSend = this.providersMapper.mapResponse(data)
+    const notification = new Notification<ProvidersResponseDto>(
+      'PROVIDER',
+      type,
+      dataToSend,
+      new Date(),
+    )
+    this.notificationGateway.sendMessage(notification)
   }
 }
