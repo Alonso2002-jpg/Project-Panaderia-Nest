@@ -12,6 +12,9 @@ import {Cache} from 'cache-manager'
 import {ResponsePersonalDto} from "./dto/response-personal.dto";
 import {FilterOperator, FilterSuffix, paginate, PaginateQuery} from "nestjs-paginate";
 
+/**
+ * Service that handles business logic for personal records management.
+ */
 @Injectable()
 export class PersonalService {
     private readonly logger = new Logger(PersonalService.name)
@@ -27,6 +30,11 @@ export class PersonalService {
     ) {
     }
 
+    /**
+     * Creates a new personal record.
+     * @param {CreatePersonalDto} createPersonalDto - DTO containing the data for the new personal.
+     * @returns {Promise<ResponsePersonalDto>} The newly created personal record as a DTO.
+     */
     async create(
         createPersonalDto: CreatePersonalDto,
     ): Promise<ResponsePersonalDto> {
@@ -38,6 +46,12 @@ export class PersonalService {
         return dto
     }
 
+
+    /**
+     * Checks if a category exists and returns it, using cache for performance optimization.
+     * @param {string} categoryName - The name of the category to check.
+     * @returns {Promise<Category>} The found category.
+     */
     public async checkCategory(categoryName: string): Promise<Category> {
         const cacheKey = `category_${categoryName.toLowerCase()}`
         const cachedCategory: Category = await this.cacheManager.get(cacheKey)
@@ -63,6 +77,11 @@ export class PersonalService {
         return category
     }
 
+    /**
+     * Retrieves all personal records, with optional pagination.
+     * @param {PaginateQuery} query - Query parameters for pagination and filtering.
+     * @returns A paginated list of personal records.
+     */
     async findAll(query: PaginateQuery) {
         this.logger.log('Searching for all staff members')
         const cacheKey = `all_staff_page_${hash(JSON.stringify(query))}`
@@ -110,6 +129,11 @@ export class PersonalService {
         return result
     }
 
+    /**
+     * Retrieves a single personal record by its UUID, using cache for performance optimization.
+     * @param {string} id - The UUID of the personal record to retrieve.
+     * @returns {Promise<ResponsePersonalDto>} The personal record with the given UUID.
+     */
     async findOne(id: string): Promise<ResponsePersonalDto> {
         this.logger.log(`Searching for the staff member with id ${id}`)
 
@@ -138,6 +162,12 @@ export class PersonalService {
         return personalDto
     }
 
+    /**
+     * Updates a personal record by its UUID.
+     * @param {string} id - The UUID of the personal record to update.
+     * @param {UpdatePersonalDto} updatePersonalDto - DTO containing the data for the update.
+     * @returns {Promise<ResponsePersonalDto>} The updated personal record as a DTO.
+     */
     async update(
         id: string,
         updatePersonalDto: UpdatePersonalDto,
@@ -163,6 +193,11 @@ export class PersonalService {
         return dto
     }
 
+    /**
+     * Checks if a personal record exists by its UUID and caches the result.
+     * @param {string} id - The UUID of the personal record to check.
+     * @returns {Promise<PersonalEntity>} The personal entity if it exists.
+     */
     public async exists(id: string): Promise<PersonalEntity> {
         const cacheKey = `personal_${id}`
 
@@ -178,6 +213,11 @@ export class PersonalService {
         return personal
     }
 
+    /**
+     * Removes a personal record by its UUID (hard delete).
+     * @param {string} id - The UUID of the personal record to remove.
+     * @returns {Promise<ResponsePersonalDto>} The removed personal record as a DTO.
+     */
     async remove(id: string): Promise<ResponsePersonalDto> {
         const personalToRemove = await this.exists(id)
         const personalRemoved =
@@ -191,6 +231,11 @@ export class PersonalService {
         return dto
     }
 
+    /**
+     * Softly removes a personal record by its UUID (soft delete - typically setting isActive to false).
+     * @param {string} id - The UUID of the personal record to soft remove.
+     * @returns {Promise<ResponsePersonalDto>} The softly removed personal record as a DTO.
+     */
     async removeSoft(id: string): Promise<ResponsePersonalDto> {
         this.logger.log(`Remove soft  id:${id}`)
         const personalToRemove = await this.exists(id)

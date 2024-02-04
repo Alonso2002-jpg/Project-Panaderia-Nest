@@ -1,50 +1,87 @@
 import {
-  Column,
-  CreateDateColumn,
-  Entity,
-  JoinColumn,
-  ManyToOne,
-  PrimaryGeneratedColumn,
-  UpdateDateColumn,
+    Column,
+    CreateDateColumn,
+    Entity,
+    JoinColumn,
+    ManyToOne,
+    OneToOne,
+    PrimaryGeneratedColumn,
+    UpdateDateColumn,
 } from 'typeorm'
-import { Category } from '../../category/entities/category.entity'
-//import { User } from './user.entity'
-// import { Category } from './category.entity'
+import {Category} from '../../category/entities/category.entity'
+import {User} from "../../user/entities/user.entity";
 
+
+/**
+ * Personal entity representing a record of an employee or staff member.
+ */
 @Entity('PERSONAL')
 export class PersonalEntity {
-  @PrimaryGeneratedColumn('uuid')
-  id: string
+    /**
+     * Unique identifier for the personal, generated as a UUID.
+     */
+    @PrimaryGeneratedColumn('uuid')
+    id: string;
 
-  @Column({ name: 'name', nullable: false })
-  name: string
+    /**
+     * Full name of the personal.
+     */
+    @Column({name: 'name', nullable: false})
+    name: string;
 
-  @Column({ name: 'dni', nullable: false, unique: true })
-  dni: string
+    /**
+     * DNI (National ID number) of the personal, unique for each record.
+     */
+    @Column({name: 'dni', nullable: false, unique: true})
+    dni: string;
 
-  @Column({ name: 'email', nullable: false, unique: true })
-  email: string
+    /**
+     * Email address of the personal, unique for each record.
+     */
+    @Column({name: 'email', nullable: false, unique: true})
+    email: string;
 
-  @CreateDateColumn({ name: 'start_date' })
-  startDate: Date
+    /**
+     * The date when the personal started working in the company.
+     */
+    @CreateDateColumn({name: 'start_date'})
+    startDate: Date;
 
-  @Column({ name: 'end_date', nullable: true })
-  endDate: Date
+    /**
+     * The date when the personal ended their service, if applicable.
+     */
+    @Column({name: 'end_date', nullable: true})
+    endDate: Date;
 
-  @CreateDateColumn({ name: 'creation_date' })
-  creationDate: Date
+    /**
+     * The date when the record was created.
+     */
+    @CreateDateColumn({name: 'creation_date'})
+    creationDate: Date;
 
-  @UpdateDateColumn({ name: 'update_date' })
-  updateDate: Date
+    /**
+     * The last date when the record was updated.
+     */
+    @UpdateDateColumn({name: 'update_date'})
+    updateDate: Date;
 
-  @Column({ name: 'active', default: true })
-  isActive: boolean
+    /**
+     * Active status indicating if the personal is currently active.
+     */
+    @Column({name: 'active', default: true})
+    isActive: boolean;
 
-  // @OneToOne((type) => User)
-  // @JoinColumn({ name: 'user_id' })
-  // user: User
+    /**
+     * The user account associated with the personal.
+     */
+    @OneToOne((type) => User)
+    @JoinColumn({name: 'user_id'})
+    user: User;
 
-  @ManyToOne((type) => Category)
-  @JoinColumn({ name: 'section' })
-  section: Category
+    /**
+     * The category or section within the company to which the personal belongs.
+     */
+    @ManyToOne((type) => Category)
+    @JoinColumn({name: 'section'})
+    section: Category;
 }

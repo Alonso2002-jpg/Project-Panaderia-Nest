@@ -27,4 +27,5 @@ import { NotificationGateway } from './websockets/notification/notification.gate
   controllers: [],
   providers: [NotificationGateway],
 })
-export class AppModule {}
+export class AppModule {
+}
