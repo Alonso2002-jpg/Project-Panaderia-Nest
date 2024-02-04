@@ -3,6 +3,7 @@ import { TypeOrmModule } from '@nestjs/typeorm'
 import { Logger, Module } from '@nestjs/common'
 import { ConfigModule } from '@nestjs/config'
 import { Category } from '../../rest/category/entities/category.entity'
+import { MongooseModule } from '@nestjs/mongoose'
 
 @Module({
   imports: [
@@ -21,6 +22,24 @@ import { Category } from '../../rest/category/entities/category.entity'
         retryAttempts: 5,
         connectionFactory: (connection) => {
           Logger.log('Postgres database connected', 'DatabaseModule')
+          return connection
+        },
+      }),
+    }),
+    MongooseModule.forRootAsync({
+      imports: [ConfigModule],
+      useFactory: async () => ({
+        uri: `mongodb://${process.env.DATABASE_USER}:${
+          process.env.DATABASE_PASSWORD
+        }@${process.env.MONGO_HOST}:${process.env.MONGO_PORT || 27017}/${
+          process.env.MONGO_DATABASE
+        }`,
+        retryAttempts: 5,
+        connectionFactory: (connection) => {
+          Logger.log(
+            `MongoDB readyState: ${connection.readyState}`,
+            'DatabaseModule',
+          )
           return connection
         },
       }),

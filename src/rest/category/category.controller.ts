@@ -7,7 +7,6 @@ import {
   Param,
   Delete,
   HttpCode,
-  ParseIntPipe,
   UseGuards,
 } from '@nestjs/common'
 import { CategoryService } from './category.service'
@@ -28,6 +27,8 @@ import {
 import { ResponseCategoryDto } from './dto/response-category.dto'
 import { Roles } from '../auth/guards/rols-auth.guard'
 import { Category } from './entities/category.entity'
+import { IntValidatorPipe } from '../utils/pipes/int-validator.pipe'
+import { BodyValidatorPipe } from '../utils/pipes/body-validator.pipe'
 
 @Controller('category')
 @UseGuards(JwtAuthGuard, RolsExistsGuard)
@@ -54,7 +55,9 @@ export class CategoryController {
     description: 'Category already exists',
   })
   @Roles('ADMIN')
-  async create(@Body() createCategoryDto: CreateCategoryDto) {
+  async create(
+    @Body(new BodyValidatorPipe()) createCategoryDto: CreateCategoryDto,
+  ) {
     return this.categoryMapper.mapResponse(
       await this.categoryService.create(createCategoryDto),
     )
@@ -93,7 +96,7 @@ export class CategoryController {
     description: 'Category identifier must be a number',
   })
   @Roles('ADMIN')
-  async findOne(@Param('id', ParseIntPipe) id: number) {
+  async findOne(@Param('id', new IntValidatorPipe()) id: number) {
     return this.categoryMapper.mapResponse(
       await this.categoryService.findOne(id),
     )
@@ -123,8 +126,8 @@ export class CategoryController {
   })
   @Roles('ADMIN')
   async update(
-    @Param('id', ParseIntPipe) id: number,
-    @Body() updateCategoryDto: UpdateCategoryDto,
+    @Param('id', new IntValidatorPipe()) id: number,
+    @Body(new BodyValidatorPipe()) updateCategoryDto: UpdateCategoryDto,
   ) {
     return this.categoryMapper.mapResponse(
       await this.categoryService.update(id, updateCategoryDto),
@@ -148,7 +151,7 @@ export class CategoryController {
     description: 'Category not found',
   })
   @Roles('ADMIN')
-  async remove(@Param('id', ParseIntPipe) id: number) {
+  async remove(@Param('id', new IntValidatorPipe()) id: number) {
     return await this.categoryService.remove(id)
   }
 }

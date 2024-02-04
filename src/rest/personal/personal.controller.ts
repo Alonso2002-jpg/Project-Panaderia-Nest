@@ -23,18 +23,22 @@ import {
     ApiNotFoundResponse,
     ApiParam,
     ApiQuery,
-    ApiResponse
+    ApiResponse,
+    ApiTags
 } from "@nestjs/swagger";
 import {CacheKey} from '@nestjs/cache-manager'
 import {ResponsePersonalDto} from "./dto/response-personal.dto";
 import {UuidValidatorPipe} from "../utils/pipes/uuid-validator.pipe";
 import {Roles, RolesAuthGuard} from "../auth/guards/rols-auth.guard";
 import {JwtAuthGuard} from "../auth/guards/jwt-auth.guard";
+import {RolsExistsGuard} from "../user/guards/rols.exists.guard";
 
 /**
  * Controller that handles HTTP requests for the 'personal' resource.
  */
 @Controller('personal')
+@UseGuards(JwtAuthGuard, RolsExistsGuard)
+@ApiTags('personal')
 export class PersonalController {
     private readonly logger = new Logger(PersonalController.name);
 
