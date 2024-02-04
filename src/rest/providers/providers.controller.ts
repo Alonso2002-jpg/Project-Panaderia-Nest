@@ -27,6 +27,8 @@ import { Paginate, PaginateQuery } from 'nestjs-paginate'
 import { UpdateProvidersDto } from './dto/update-providers.dto'
 import { Roles, RolesAuthGuard } from '../auth/guards/rols-auth.guard'
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard'
+import { BodyValidatorPipe } from "../utils/pipes/body-validator.pipe";
+import { IntValidatorPipe } from "../utils/pipes/int-validator.pipe";
 
 @ApiTags('providers')
 @UseInterceptors(CacheInterceptor)
@@ -80,7 +82,7 @@ export class ProvidersController {
   @ApiParam({ name: 'id', description: 'Provider ID' })
   @ApiResponse({ status: 200, description: 'Success', type: ProvidersEntity })
   @ApiResponse({ status: 404, description: 'Provider not found' })
-  findOne(@Param('id') id: number): Promise<ProvidersEntity> {
+  findOne(@Param('id', new IntValidatorPipe()) id: number): Promise<ProvidersEntity> {
     this.logger.log(`Obtaining provider with ID: ${id}`)
     return this.ProvidersService.findOne(+id)
   }
@@ -101,7 +103,7 @@ export class ProvidersController {
   @ApiResponse({ status: 201, description: 'Created', type: ProvidersEntity })
   @ApiBadRequestResponse({ description: 'Bad request' })
   @ApiInternalServerErrorResponse({ description: 'Internal server error' })
-  create(@Body() Providers: ProvidersEntity): Promise<ProvidersEntity> {
+  create(@Body(new BodyValidatorPipe()) Providers: ProvidersEntity): Promise<ProvidersEntity> {
     this.logger.log('Creating a new provider')
     return this.ProvidersService.create(Providers)
   }
@@ -125,8 +127,8 @@ export class ProvidersController {
   @ApiResponse({ status: 404, description: 'Provider not found' })
   @ApiBadRequestResponse({ description: 'Bad request' })
   update(
-    @Param('id') id: number,
-    @Body() Providers: UpdateProvidersDto,
+    @Param('id', new IntValidatorPipe()) id: number,
+    @Body(new BodyValidatorPipe()) Providers: UpdateProvidersDto,
   ): Promise<ProvidersEntity> {
     this.logger.log(`Updating provider with ID: ${id}`)
     return this.ProvidersService.update(+id, Providers)
@@ -149,7 +151,7 @@ export class ProvidersController {
   @ApiParam({ name: 'id', description: 'Provider ID' })
   @ApiResponse({ status: 204, description: 'No content' })
   @ApiResponse({ status: 404, description: 'Provider not found' })
-  remove(@Param('id') id: string): Promise<void> {
+  remove(@Param('id', new IntValidatorPipe()) id: string): Promise<void> {
     this.logger.log(`Deleting provider with ID: ${id}`)
     return this.ProvidersService.remove(+id)
   }
