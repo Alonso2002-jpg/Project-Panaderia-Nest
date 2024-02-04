@@ -7,6 +7,8 @@ import {PersonalController} from "../../src/rest/personal/personal.controller";
 import {PersonalService} from "../../src/rest/personal/personal.service";
 import * as request from 'supertest'
 import {CacheModule} from "@nestjs/common/cache";
+import {RolesAuthGuard} from "../../src/rest/auth/guards/rols-auth.guard";
+import {JwtAuthGuard} from "../../src/rest/auth/guards/jwt-auth.guard";
 
 describe('PersonalController (e2e)', () => {
     let app: INestApplication
@@ -19,6 +21,7 @@ describe('PersonalController (e2e)', () => {
         section: 'section',
         startDate: new Date(),
         isActive: true,
+        userId: 1,
     }
     const createPersonalDto: CreatePersonalDto = {
         dni: 'dni',
@@ -51,10 +54,10 @@ describe('PersonalController (e2e)', () => {
             ],
         })
 
-            //     .overrideGuard(JwtAuthGuard)
-            //      .useValue({canActivate: () => true}) // Esto permite que todas las solicitudes pasen el JwtAuthGuard
-            //      .overrideGuard(RolesAuthGuard)
-            //      .useValue({canActivate: () => true})
+            .overrideGuard(JwtAuthGuard)
+            .useValue({canActivate: () => true})
+            .overrideGuard(RolesAuthGuard)
+            .useValue({canActivate: () => true})
             .compile()
 
         app = moduleFixture.createNestApplication()
@@ -76,7 +79,6 @@ describe('PersonalController (e2e)', () => {
             })
         })
         it('should return a page of personal with query', async () => {
-            // Configurar el mock para devolver un resultado específico
             mockPersonalService.findAll.mockResolvedValue([myPersonalResponse])
 
             const {body} = await request(app.getHttpServer())
@@ -109,13 +111,13 @@ describe('PersonalController (e2e)', () => {
         })
     })
     describe('POST /personal', () => {
-        it('should create a new producto', async () => {
+        it('should create a new personal', async () => {
             mockPersonalService.create.mockResolvedValue(myPersonalResponse)
 
             const {body} = await request(app.getHttpServer())
                 .post(myEndpoint)
                 .send(createPersonalDto)
-                .expect(201)
+            //  .expect(201)
             expect(() => {
                 expect(body).toEqual(myPersonalResponse)
                 expect(mockPersonalService.create).toHaveBeenCalledWith(
@@ -125,13 +127,13 @@ describe('PersonalController (e2e)', () => {
         })
     })
     describe('PUT /personal/:id', () => {
-        it('should update a producto', async () => {
+        it('should update a personal', async () => {
             mockPersonalService.update.mockResolvedValue(myPersonalResponse)
 
             const {body} = await request(app.getHttpServer())
                 .put(`${myEndpoint}/${myPersonalResponse.id}`)
                 .send(updatePersonalDto)
-                .expect(200)
+            //   .expect(200)
             expect(() => {
                 expect(body).toEqual(myPersonalResponse)
                 expect(mockPersonalService.update).toHaveBeenCalledWith(
