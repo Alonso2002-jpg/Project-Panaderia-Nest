@@ -7,6 +7,7 @@ import { OrderMapper } from './mappers/orders.mapper'
 import { TypeOrmModule } from '@nestjs/typeorm'
 import * as mongoosePaginate from 'mongoose-paginate-v2'
 import { MongooseModule, SchemaFactory } from '@nestjs/mongoose'
+import {User} from "../user/entities/user.entity";
 
 @Module({
   imports: [

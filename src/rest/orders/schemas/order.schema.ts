@@ -35,8 +35,8 @@ export class Client {
 }
 
 export class OrderLine {
-    @Prop({ type: Number, required: true })
-    idProduct: number;
+    @Prop({ type: String, required: true })
+    idProduct: string;
 
     @Prop({ type: Number, required: true})
     priceProduct: number;
