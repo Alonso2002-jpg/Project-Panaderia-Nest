@@ -21,11 +21,8 @@ export class MapperPersonal {
         createPersonalDto: CreatePersonalDto,
         categoria: Category,
     ): PersonalEntity {
-        // Create a new PersonalEntity instance from the CreatePersonalDto.
         const personalEntity = plainToClass(PersonalEntity, createPersonalDto);
-        // Assign the provided Category to the new entity.
         personalEntity.section = categoria;
-        // Generate a new UUID for the personal entity.
         personalEntity.id = uuidv4();
         return personalEntity;
     }
@@ -38,7 +35,6 @@ export class MapperPersonal {
     toResponseDto(personal: PersonalEntity): ResponsePersonalDto {
         // Create a new ResponsePersonalDto instance from the PersonalEntity.
         const dto = plainToClass(ResponsePersonalDto, personal);
-        // If the entity has an associated section, map the name to the DTO's section field.
         if (personal.section) {
             dto.section = personal.section.nameCategory;
         } else {
