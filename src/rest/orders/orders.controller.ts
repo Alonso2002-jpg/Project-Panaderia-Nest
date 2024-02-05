@@ -5,12 +5,10 @@ import { UpdateOrderDto } from './dto/update-order.dto';
 import { OrderValidatePipe } from './pipes/order-validate.pipe'
 import { IdValidatePipe } from './pipes/id-validate.pipe'
 import { ApiExcludeController } from '@nestjs/swagger'
-import { CacheInterceptor } from '@nestjs/cache-manager'
 import { Roles, RolesAuthGuard } from '../auth/guards/rols-auth.guard'
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard'
 
 @Controller('orders')
-@UseInterceptors(CacheInterceptor)
 @UseGuards(JwtAuthGuard, RolesAuthGuard)
 @ApiExcludeController()
 export class OrdersController {
