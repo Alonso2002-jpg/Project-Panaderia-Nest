@@ -218,8 +218,18 @@ describe('OrdersService', () => {
           collection: 'es_ES',
         },
       )
-      // expect(result).toEqual(mockOrders)
     })
+  })
+
+  describe('findByIdUser', () => {
+    it('should return all order associate to an user', async () => {
+      jest.spyOn(ordersRepository, 'find').mockReturnValue({
+        exec: jest.fn().mockResolvedValue([order]),
+      } as any)
+
+      const result = await service.findByIdUser(1);
+      expect(result[0]).toEqual(order)
+    });
   })
 
   describe('FindOne', () => {
@@ -366,5 +376,35 @@ describe('OrdersService', () => {
 
       await expect(service.remove(orderId)).rejects.toThrow(NotFoundException)
     })
+  })
+
+  describe('userExists', () => {
+    it('should return true is user exist', async () => {
+      jest.spyOn(userRepository, 'findOneBy').mockReturnValue({
+        exec: jest.fn().mockResolvedValue(new User()),
+      } as any)
+
+      const result = await service.userExists(1);
+
+      expect(result).toBeTruthy();
+    });
+    it('should return false is user doesn´t exist', async () => {
+      jest.spyOn(userRepository, 'findOneBy').mockReturnValue(undefined)
+
+      const result = await service.userExists(1);
+
+      expect(result).toEqual(false)
+    });
+  })
+
+  describe('getOrderByUser', () => {
+    it('should return all order associate to an user', async () => {
+      jest.spyOn(ordersRepository, 'find').mockReturnValue({
+        exec: jest.fn().mockResolvedValue([order]),
+      } as any)
+
+      const result = await service.getOrderByUser(1);
+      expect(result[0]).toEqual(order)
+    });
   })
 })

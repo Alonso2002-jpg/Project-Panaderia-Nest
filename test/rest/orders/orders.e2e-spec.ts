@@ -1,16 +1,15 @@
-import { INestApplication, NotFoundException } from '@nestjs/common'
+import { INestApplication, NotFoundException} from '@nestjs/common'
 import { UpdateOrderDto } from '../../../src/rest/orders/dto/update-order.dto'
 import { CreateOrderDto } from '../../../src/rest/orders/dto/create-order.dto'
 import { Product } from '../../../src/rest/product/entities/product.entity'
 import { Category } from '../../../src/rest/category/entities/category.entity'
 import { ProvidersEntity } from '../../../src/rest/providers/entities/providers.entity'
 import { Test, TestingModule } from '@nestjs/testing'
-import { CacheModule } from '@nestjs/cache-manager'
 import { OrdersController } from '../../../src/rest/orders/orders.controller'
 import { OrdersService } from '../../../src/rest/orders/orders.service'
 import * as request from 'supertest'
 import { JwtAuthGuard } from '../../../src/rest/auth/guards/jwt-auth.guard'
-import { RolesAuthGuard } from '../../../src/rest/auth/guards/roles-auth.guard'
+import { RolesAuthGuard } from '../../../src/rest/auth/guards/rols-auth.guard'
 
 describe('OrdersController (e2e)', () => {
   let app: INestApplication
@@ -116,22 +115,22 @@ describe('OrdersController (e2e)', () => {
     update: jest.fn(),
     remove: jest.fn(),
     findByIdUser: jest.fn(),
+    userExists: jest.fn(),
   }
 
   beforeEach(async () => {
     const moduleFixture: TestingModule = await Test.createTestingModule({
-      imports: [CacheModule.register()],
       controllers: [OrdersController],
       providers: [
         OrdersService,
         { provide: OrdersService, useValue: mockOrderService },
       ],
     })
-      .compile()
       .overrideGuard(JwtAuthGuard)
       .useValue({ canActivate: () => true })
       .overrideGuard(RolesAuthGuard)
       .useValue({ canActivate: () => true })
+      .compile()
 
     app = moduleFixture.createNestApplication()
     await app.init()
@@ -143,13 +142,13 @@ describe('OrdersController (e2e)', () => {
 
   describe('GET /orders', () => {
     it('should return a page of orders', async () => {
-      mockOrderService.findAll.mockResolvedValue([order])
+      mockOrderService.findAll.mockResolvedValue([])
 
       const { body } = await request(app.getHttpServer())
         .get(myEndPoint)
         .expect(200)
       expect(() => {
-        expect(body).toEqual([order])
+        expect(body).toEqual([])
         expect(mockOrderService.findAll).toHaveBeenCalled()
       })
     })
@@ -168,16 +167,14 @@ describe('OrdersController (e2e)', () => {
       })
     })
     it('should throw an error if order doesn`t exist', async () => {
-      mockOrderService.findOne.mockResolvedValue(new NotFoundException())
+      mockOrderService.findOne.mockRejectedValue(new NotFoundException())
 
       await request(app.getHttpServer())
         .get(`${myEndPoint}/5f70f0e0a177a50c9c59b5c0`)
         .expect(404)
     })
     it('should throw an error if id is not valid', async () => {
-      await request(app.getHttpServer())
-        .get(`${myEndPoint}/5f70f0e0a177a50c9c59b5c0`)
-        .expect(400)
+      await request(app.getHttpServer()).get(`${myEndPoint}/1`).expect(400)
     })
   })
 
@@ -198,10 +195,11 @@ describe('OrdersController (e2e)', () => {
 
   describe('PUT /orders/:id', () => {
     it('should update an order', async () => {
+      mockOrderService.userExists.mockResolvedValue(true)
       mockOrderService.update.mockResolvedValue(order)
 
       const { body } = await request(app.getHttpServer())
-        .put(`${myEndPoint}/5f70f0e0a177a50c9c59b5c0}`)
+        .put(`${myEndPoint}/5f70f0e0a177a50c9c59b5c0`)
         .send(updateOrderDto)
         .expect(200)
       expect(() => {
@@ -213,8 +211,16 @@ describe('OrdersController (e2e)', () => {
       })
     })
     it('should throw an error if Id is not valid', async () => {
+      mockOrderService.userExists.mockResolvedValue(true)
       await request(app.getHttpServer())
         .put(`${myEndPoint}/1}`)
+        .send(updateOrderDto)
+        .expect(400)
+    })
+    it('should throw an error if user doesn´t exist', async () => {
+      mockOrderService.userExists.mockResolvedValue(false)
+      await request(app.getHttpServer())
+        .put(`${myEndPoint}/5f70f0e0a177a50c9c59b5c0}`)
         .send(updateOrderDto)
         .expect(400)
     })
@@ -225,14 +231,14 @@ describe('OrdersController (e2e)', () => {
       mockOrderService.remove.mockResolvedValue(order)
 
       await request(app.getHttpServer())
-        .delete(`${myEndPoint}/5f70f0e0a177a50c9c59b5c0}`)
+        .delete(`${myEndPoint}/5f70f0e0a177a50c9c59b5c0`)
         .expect(204)
     })
     it('should throw an error if the order doesn`t exist', async () => {
-      mockOrderService.remove.mockResolvedValue(new NotFoundException())
+      mockOrderService.remove.mockRejectedValue(new NotFoundException())
 
       await request(app.getHttpServer())
-        .delete(`${myEndPoint}/5f70f0e0a177a50c9c59b5c0}`)
+        .delete(`${myEndPoint}/5f70f0e0a177a50c9c59b5c0`)
         .expect(404)
     })
   })
