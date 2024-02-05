@@ -206,7 +206,6 @@ describe('ProductController (e2e)', () => {
         .set('Content-Type', 'multipart/form-data')
         .expect(200)
     })
-
     it('should throw an error if the image extension is not allowed', async () => {
       const file = Buffer.from('file')
 

@@ -7,7 +7,7 @@ import { IdValidatePipe } from './pipes/id-validate.pipe'
 import { ApiExcludeController } from '@nestjs/swagger'
 import { CacheInterceptor } from '@nestjs/cache-manager'
 import { Roles, RolesAuthGuard } from '../auth/guards/rols-auth.guard'
-import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard'
+import { JwtAuthGuard } from "../auth/guards/jwt-auth.guard";
 
 @Controller('orders')
 @UseInterceptors(CacheInterceptor)
