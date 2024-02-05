@@ -259,7 +259,7 @@ export class ProductController {
       }),
       fileFilter: (req, file, cb) => {
         const allowedMimes = ['image/jpeg', 'image/png', 'image/gif']
-        const maxFileSize = 1024 * 1024 // 1 megabyte
+        const maxFileSize = 1024 * 1024
         if (!allowedMimes.includes(file.mimetype)) {
           cb(
             new BadRequestException(
