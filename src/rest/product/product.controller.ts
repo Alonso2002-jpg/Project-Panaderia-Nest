@@ -39,6 +39,8 @@ import { v4 as uuidv4 } from 'uuid'
 import { FileInterceptor } from '@nestjs/platform-express'
 import { ProductExistsGuard } from './guards/product-exists.guard'
 import { BodyValidatorPipe } from '../utils/pipes/body-validator.pipe'
+import {JwtAuthGuard} from "../auth/guards/jwt-auth.guard";
+import {Roles, RolesAuthGuard} from "../auth/guards/rols-auth.guard";
 
 @Controller('products')
 @UseInterceptors(CacheInterceptor)
@@ -93,8 +95,8 @@ export class ProductController {
 
   @Post()
   @HttpCode(201)
-  //@UseGuards(JwtAuthGuard, RolesAuthGuard)
-  //@Roles('ADMIN')
+  @UseGuards(JwtAuthGuard, RolesAuthGuard)
+  @Roles('ADMIN')
   @ApiBearerAuth()
   @ApiResponse({
     status: 201,
@@ -143,8 +145,8 @@ export class ProductController {
   }
 
   @Put(':id')
-  //@UseGuards(JwtAuthGuard, RolesAuthGuard)
-  //@Roles('ADMIN')
+  @UseGuards(JwtAuthGuard, RolesAuthGuard)
+  @Roles('ADMIN')
   @ApiBearerAuth()
   @ApiResponse({
     status: 200,
@@ -184,8 +186,8 @@ export class ProductController {
 
   @Delete(':id')
   @HttpCode(204)
-  //@UseGuards(JwtAuthGuard, RolesAuthGuard)
-  //@Roles('ADMIN')
+  @UseGuards(JwtAuthGuard, RolesAuthGuard)
+  @Roles('ADMIN')
   @ApiBearerAuth()
   @ApiResponse({
     status: 204,
@@ -208,8 +210,8 @@ export class ProductController {
   }
 
   @Patch('/image/:id')
-  //@UseGuards(JwtAuthGuard, RolesAuthGuard)
-  //@Roles('ADMIN')
+  @UseGuards(JwtAuthGuard, RolesAuthGuard)
+  @Roles('ADMIN')
   @UseGuards(ProductExistsGuard)
   @ApiBearerAuth()
   @ApiResponse({

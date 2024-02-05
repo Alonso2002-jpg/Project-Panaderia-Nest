@@ -7,6 +7,8 @@ import { CacheModule } from '@nestjs/cache-manager'
 import { ProductController } from '../../../src/rest/product/product.controller'
 import { ProductService } from '../../../src/rest/product/product.service'
 import * as request from 'supertest'
+import { JwtAuthGuard } from '../../../src/rest/auth/guards/jwt-auth.guard'
+import { RolesAuthGuard } from '../../../src/rest/auth/guards/rols-auth.guard'
 
 describe('ProductController (e2e)', () => {
   let app: INestApplication
@@ -58,7 +60,12 @@ describe('ProductController (e2e)', () => {
         ProductService,
         { provide: ProductService, useValue: mockProductService },
       ],
-    }).compile()
+    })
+      .overrideGuard(JwtAuthGuard)
+      .useValue({ canActivate: () => true })
+      .overrideGuard(RolesAuthGuard)
+      .useValue({ canActivate: () => true })
+      .compile()
 
     app = moduleFixture.createNestApplication()
     await app.init()
