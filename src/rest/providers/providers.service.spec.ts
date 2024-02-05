@@ -10,6 +10,7 @@ import { ProvidersMapper } from './mapper/providersMapper'
 import { Paginated } from 'nestjs-paginate'
 import { Category } from '../category/entities/category.entity'
 import { UpdateProvidersDto } from './dto/update-providers.dto'
+import { NotificationGateway } from '../../websockets/notification/notification.gateway'
 describe('ProvidersService', () => {
   let service: ProvidersService
   let providersRepository: Repository<ProvidersEntity>
@@ -37,6 +38,7 @@ describe('ProvidersService', () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         ProvidersService,
+        NotificationGateway,
         { provide: getRepositoryToken(ProvidersEntity), useClass: Repository },
         { provide: ProvidersMapper, useValue: providersMapperMock },
         { provide: StorageService, useValue: storageServiceMock },
