@@ -81,7 +81,7 @@ export class PersonalEntity {
     /**
      * The category or section within the company to which the personal belongs.
      */
-    @ManyToOne((type) => Category)
+    @ManyToOne(() => Category, (category) => category.personal)
     @JoinColumn({name: 'section'})
     section: Category;
 }
