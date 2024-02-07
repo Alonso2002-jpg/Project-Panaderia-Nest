@@ -21,6 +21,7 @@ import { AuthModule } from './rest/auth/auth.module'
     PersonalModule,
     DatabaseModule,
     ProductModule,
+    AuthModule,
     OrdersModule,
     ProvidersModule,
     StorageModule,

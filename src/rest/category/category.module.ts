@@ -5,9 +5,10 @@ import { TypeOrmModule } from '@nestjs/typeorm'
 import { Category } from './entities/category.entity'
 import { CategoryMapper } from './mapper/category-mapper.service'
 import { NotificationGateway } from '../../websockets/notification/notification.gateway'
+import { CacheModule } from '@nestjs/cache-manager'
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Category])],
+  imports: [TypeOrmModule.forFeature([Category]), CacheModule.register()],
   controllers: [CategoryController],
   providers: [CategoryService, CategoryMapper, NotificationGateway],
 })

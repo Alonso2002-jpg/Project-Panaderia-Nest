@@ -2,8 +2,14 @@ import * as process from 'process'
 import { TypeOrmModule } from '@nestjs/typeorm'
 import { Logger, Module } from '@nestjs/common'
 import { ConfigModule } from '@nestjs/config'
-import { Category } from '../../rest/category/entities/category.entity'
 import { MongooseModule } from '@nestjs/mongoose'
+import * as path from 'path'
+import { Product } from '../../rest/product/entities/product.entity'
+import { PersonalEntity } from '../../rest/personal/entities/personal.entity'
+import { Category } from '../../rest/category/entities/category.entity'
+import { UserRole } from '../../rest/user/entities/user.roles.entity'
+import { User } from '../../rest/user/entities/user.entity'
+import { ProvidersEntity } from '../../rest/providers/entities/providers.entity'
 
 @Module({
   imports: [
@@ -16,7 +22,7 @@ import { MongooseModule } from '@nestjs/mongoose'
         username: process.env.DATABASE_USER,
         password: process.env.DATABASE_PASSWORD,
         database: process.env.POSTGRES_DATABASE,
-        entities: [Category],
+        entities: [Product, ProvidersEntity, Category, UserRole, User], // Cargamos todas las entidades,
         synchronize: process.env.NODE_ENV === 'dev',
         logging: process.env.NODE_ENV === 'dev' ? 'all' : false,
         retryAttempts: 5,

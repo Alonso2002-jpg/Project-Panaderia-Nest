@@ -1,11 +1,11 @@
-import { plainToClass } from 'class-transformer';
-import { validateOrReject } from 'class-validator';
-import { ProvidersEntity } from '../entities/providers.entity';
-import { CreateProvidersDto } from '../dto/create-providers.dto';
-import { UpdateProvidersDto } from '../dto/update-providers.dto';
-import { ProvidersResponseDto } from '../dto/response-providers.dto';
-import { Category } from "../../category/entities/category.entity";
-import { ResponseCategoryDto } from "../../category/dto/response-category.dto";
+import { plainToClass } from 'class-transformer'
+import { validateOrReject } from 'class-validator'
+import { ProvidersEntity } from '../entities/providers.entity'
+import { CreateProvidersDto } from '../dto/create-providers.dto'
+import { UpdateProvidersDto } from '../dto/update-providers.dto'
+import { ProvidersResponseDto } from '../dto/response-providers.dto'
+import { Category } from '../../category/entities/category.entity'
+import { ResponseCategoryDto } from '../../category/dto/response-category.dto'
 
 /**
  * Mapeador de los DTOs de las entidades de proveedor
@@ -17,8 +17,8 @@ export class ProvidersMapper {
    * @returns {ProvidersEntity} La entidad de proveedores a sido creada.
    */
   static toEntity(createDto: CreateProvidersDto): Promise<ProvidersEntity> {
-    const entity = plainToClass(ProvidersEntity, createDto);
-    return validateOrReject(entity).then(() => entity);
+    const entity = plainToClass(ProvidersEntity, createDto)
+    return validateOrReject(entity).then(() => entity)
   }
 
   /**
@@ -29,7 +29,7 @@ export class ProvidersMapper {
   static toDto(entity: ProvidersEntity): ProvidersResponseDto {
     return plainToClass(ProvidersResponseDto, entity, {
       excludeExtraneousValues: true,
-    });
+    })
   }
 
   /**
@@ -40,8 +40,8 @@ export class ProvidersMapper {
   static toEntityFromUpdate(
     updateDto: UpdateProvidersDto,
   ): Promise<ProvidersEntity> {
-    const entity = plainToClass(ProvidersEntity, updateDto);
-    return validateOrReject(entity).then(() => entity);
+    const entity = plainToClass(ProvidersEntity, updateDto)
+    return validateOrReject(entity).then(() => entity)
   }
 
   /**
@@ -52,7 +52,7 @@ export class ProvidersMapper {
   static toUpdateDto(entity: ProvidersEntity): UpdateProvidersDto {
     return plainToClass(UpdateProvidersDto, entity, {
       excludeExtraneousValues: true,
-    });
+    })
   }
 
   /**
@@ -70,8 +70,8 @@ export class ProvidersMapper {
       new ProvidersEntity(),
       existingEntity,
       partialUpdateDto,
-    );
-    return validateOrReject(updatedEntity).then(() => updatedEntity);
+    )
+    return validateOrReject(updatedEntity).then(() => updatedEntity)
   }
 
   /**
@@ -89,7 +89,7 @@ export class ProvidersMapper {
       UpdateProvidersDto,
       { ...existingEntity, ...partialUpdateDto },
       { excludeExtraneousValues: true },
-    );
+    )
   }
   mapResponse(providers: ProvidersEntity): ProvidersResponseDto {
     const response = new ProvidersResponseDto()

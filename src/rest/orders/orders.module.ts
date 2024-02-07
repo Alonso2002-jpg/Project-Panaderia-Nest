@@ -8,6 +8,7 @@ import { TypeOrmModule } from '@nestjs/typeorm'
 import * as mongoosePaginate from 'mongoose-paginate-v2'
 import { MongooseModule, SchemaFactory } from '@nestjs/mongoose'
 import { User } from '../user/entities/user.entity'
+import { CacheModule } from '@nestjs/cache-manager'
 
 @Module({
   imports: [
@@ -23,6 +24,7 @@ import { User } from '../user/entities/user.entity'
     ]),
     TypeOrmModule.forFeature([Product]),
     TypeOrmModule.forFeature([User]),
+    CacheModule.register(),
   ],
   controllers: [OrdersController],
   providers: [OrdersService, OrderMapper],
