@@ -145,74 +145,73 @@ describe('ProvidersService', () => {
     })
   })
   describe('update', () => {
-    it('should update an existing provider and return the updated entity', async () => {
-      const mockProvider: ProvidersEntity = {
-        id: 1,
-        name: 'Provider 1',
-        NIF: '123456789',
-        number: '123-45-6789',
-        CreationDate: undefined,
-        UpdateDate: undefined,
-        type: new Category(),
-        products: [],
+    it('should update an existing provider', async () => {
+      const id = 1
+      const updatedProviderDto: UpdateProvidersDto = {
+        id: 0,
+        NIF: '123456780',
+        number: '123-45-6780',
+        name: 'Provider 2',
       }
-
-      const mockUpdateDto: UpdateProvidersDto = {
-        id: 2,
-        name: 'Updated Provider 1',
-        NIF: '1111111111',
-        number: '123-45-6989',
-      }
-
+      const existingProvider = new ProvidersEntity()
       jest
         .spyOn(providersRepository, 'findOne')
-        .mockResolvedValueOnce(mockProvider)
-      jest.spyOn(providersRepository, 'save').mockResolvedValue(mockProvider)
+        .mockResolvedValue(existingProvider)
+      jest.spyOn(providersRepository, 'save').mockImplementation(jest.fn())
+      jest.spyOn(service, 'onChange').mockImplementation(jest.fn())
 
-      const result = await service.update(1, mockUpdateDto)
+      await service.update(id, updatedProviderDto)
 
       expect(providersRepository.findOne).toHaveBeenCalledWith({
-        where: { id: 1 },
+        where: { id },
       })
       expect(providersRepository.save).toHaveBeenCalledWith({
-        ...mockProvider,
-        ...mockUpdateDto,
+        ...existingProvider,
+        ...updatedProviderDto,
       })
-      expect(result).toEqual(mockProvider)
     })
 
-    it('should return undefined if the provider does not exist', async () => {
-      const mockUpdateDto: UpdateProvidersDto = {
-        id: 2,
-        name: 'Updated Provider 1',
-        NIF: '1111111111',
-        number: '123-45-6989',
-      }
+    it('should throw an error when provider does not exist', async () => {
+      const id = 1
+      jest.spyOn(providersRepository, 'findOne').mockResolvedValue(null)
 
-      jest
-        .spyOn(providersRepository, 'findOne')
-        .mockResolvedValueOnce(undefined)
-
-      const result = await service.update(1, mockUpdateDto)
+      await expect(
+        service.update(id, {} as UpdateProvidersDto),
+      ).rejects.toThrowError(`No se encontró el proveedor con ID ${id}`)
 
       expect(providersRepository.findOne).toHaveBeenCalledWith({
-        where: { id: 1 },
+        where: { id },
       })
-      expect(result).toBeUndefined()
     })
   })
+
   describe('remove', () => {
-    it('should remove a provider by ID', async () => {
+    it('should remove an existing provider', async () => {
       const id = 1
+      const existingProvider = new ProvidersEntity()
+      jest
+        .spyOn(providersRepository, 'findOne')
+        .mockResolvedValue(existingProvider)
       jest.spyOn(providersRepository, 'delete').mockResolvedValue(undefined)
+      jest.spyOn(service, 'onChange').mockImplementation(jest.fn())
 
       await service.remove(id)
 
+      expect(providersRepository.findOne).toHaveBeenCalledWith({
+        where: { id },
+      })
       expect(providersRepository.delete).toHaveBeenCalledWith(id)
     })
 
-    it('should throw NotFoundException if provider does not exist', async () => {
-      jest.spyOn(providersRepository, 'delete').mockRejectedValue(new Error())
+    it('should log a warning when provider does not exist', async () => {
+      const id = 1
+      jest.spyOn(providersRepository, 'findOne').mockResolvedValue(null)
+
+      await service.remove(id)
+
+      expect(providersRepository.findOne).toHaveBeenCalledWith({
+        where: { id },
+      })
     })
   })
 })

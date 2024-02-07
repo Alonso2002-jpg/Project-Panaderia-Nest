@@ -25,6 +25,7 @@ import { AuthModule } from './rest/auth/auth.module'
     OrdersModule,
     ProvidersModule,
     StorageModule,
+    AuthModule,
   ],
   controllers: [],
   providers: [NotificationGateway],
