@@ -2,8 +2,8 @@ import * as process from 'process'
 import { TypeOrmModule } from '@nestjs/typeorm'
 import { Logger, Module } from '@nestjs/common'
 import { ConfigModule } from '@nestjs/config'
-import { Category } from '../../rest/category/entities/category.entity'
 import { MongooseModule } from '@nestjs/mongoose'
+import * as path from 'path'
 
 @Module({
   imports: [
@@ -16,7 +16,10 @@ import { MongooseModule } from '@nestjs/mongoose'
         username: process.env.DATABASE_USER,
         password: process.env.DATABASE_PASSWORD,
         database: process.env.POSTGRES_DATABASE,
-        entities: [Category],
+        entities: [
+          path.join(__dirname),
+          '../../dist/rest/**/*.entity{.ts,.js}',
+        ], // Cargamos todas las entidades,
         synchronize: process.env.NODE_ENV === 'dev',
         logging: process.env.NODE_ENV === 'dev' ? 'all' : false,
         retryAttempts: 5,

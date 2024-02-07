@@ -6,6 +6,18 @@ import { PassportModule } from '@nestjs/passport'
 import { JwtAuthStrategy } from './strategies/jwt-strategy'
 import { AuthMapper } from './mapper/auth.mapper'
 import { UserModule } from '../user/user.module'
+import { UsersService } from '../user/user.service'
+import { TypeOrmModule } from '@nestjs/typeorm'
+import { User } from '../user/entities/user.entity'
+import { UserRole } from '../user/entities/user.roles.entity'
+import { MongooseModule, SchemaFactory } from '@nestjs/mongoose'
+import { Order } from '../orders/schemas/order.schema'
+import * as mongoosePaginate from 'mongoose-paginate-v2'
+import { OrdersService } from '../orders/orders.service'
+import { UsersMapper } from '../user/mapper/users.mapper'
+import { BcryptService } from '../utils/bcrypt/bcrypt.services'
+import { Product } from '../product/entities/product.entity'
+import { OrderMapper } from '../orders/mappers/orders.mapper'
 
 @Module({
   imports: [
@@ -26,8 +38,28 @@ import { UserModule } from '../user/user.module'
     PassportModule.register({ defaultStrategy: 'jwt' }),
     // Importamos el módulo de usuarios porque usaremos su servicio
     UserModule,
+    MongooseModule.forFeatureAsync([
+      {
+        name: Order.name,
+        useFactory: () => {
+          const schema = SchemaFactory.createForClass(Order)
+          schema.plugin(mongoosePaginate)
+          return schema
+        },
+      },
+    ]),
+    TypeOrmModule.forFeature([User, UserRole, Product]),
   ],
   controllers: [AuthController],
-  providers: [AuthService, AuthMapper, JwtAuthStrategy],
+  providers: [
+    AuthService,
+    AuthMapper,
+    JwtAuthStrategy,
+    UsersService,
+    OrdersService,
+    OrderMapper,
+    UsersMapper,
+    BcryptService,
+  ],
 })
 export class AuthModule {}

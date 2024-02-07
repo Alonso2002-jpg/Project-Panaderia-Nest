@@ -25,13 +25,13 @@ import {
   ApiTags,
 } from '@nestjs/swagger'
 import { ResponseCategoryDto } from './dto/response-category.dto'
-import { Roles } from '../auth/guards/rols-auth.guard'
+import { Roles, RolesAuthGuard } from '../auth/guards/rols-auth.guard'
 import { Category } from './entities/category.entity'
 import { IntValidatorPipe } from '../utils/pipes/int-validator.pipe'
 import { BodyValidatorPipe } from '../utils/pipes/body-validator.pipe'
 
 @Controller('category')
-@UseGuards(JwtAuthGuard, RolsExistsGuard)
+@UseGuards(JwtAuthGuard, RolesAuthGuard)
 @ApiTags('Categories')
 export class CategoryController {
   constructor(
