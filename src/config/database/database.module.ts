@@ -4,6 +4,12 @@ import { Logger, Module } from '@nestjs/common'
 import { ConfigModule } from '@nestjs/config'
 import { MongooseModule } from '@nestjs/mongoose'
 import * as path from 'path'
+import { Product } from '../../rest/product/entities/product.entity'
+import { PersonalEntity } from '../../rest/personal/entities/personal.entity'
+import { Category } from '../../rest/category/entities/category.entity'
+import { UserRole } from '../../rest/user/entities/user.roles.entity'
+import { User } from '../../rest/user/entities/user.entity'
+import { ProvidersEntity } from '../../rest/providers/entities/providers.entity'
 
 @Module({
   imports: [
@@ -16,10 +22,7 @@ import * as path from 'path'
         username: process.env.DATABASE_USER,
         password: process.env.DATABASE_PASSWORD,
         database: process.env.POSTGRES_DATABASE,
-        entities: [
-          path.join(__dirname),
-          '../../dist/rest/**/*.entity{.ts,.js}',
-        ], // Cargamos todas las entidades,
+        entities: [Product, ProvidersEntity, Category, UserRole, User], // Cargamos todas las entidades,
         synchronize: process.env.NODE_ENV === 'dev',
         logging: process.env.NODE_ENV === 'dev' ? 'all' : false,
         retryAttempts: 5,

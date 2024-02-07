@@ -2,18 +2,19 @@ import {
   Column,
   Entity,
   JoinColumn,
-  ManyToOne, OneToMany,
-  PrimaryGeneratedColumn
-} from "typeorm";
+  ManyToOne,
+  OneToMany,
+  PrimaryGeneratedColumn,
+} from 'typeorm'
 import { ApiProperty } from '@nestjs/swagger'
 import { Category } from '../../category/entities/category.entity'
-import { Product } from "../../product/entities/product.entity";
+import { Product } from '../../product/entities/product.entity'
 
 /**
  * Entity class for Providers
  * @Author: Laura Garrido
  */
-@Entity('PROVIDERS')
+@Entity('providers')
 export class ProvidersEntity {
   /**
    * Clave primaria de proveedores
@@ -32,7 +33,7 @@ export class ProvidersEntity {
   /**
    * Numero del proveedor
    */
-  @Column({ type: 'integer' })
+  @Column({ type: 'varchar' })
   @ApiProperty({ description: 'Number of the provider' })
   number: string
 
@@ -71,10 +72,10 @@ export class ProvidersEntity {
   // @JoinColumn({ name: 'user_id' })
   // user: User
 
-  @ManyToOne((type) => Category)
+  @ManyToOne(() => Category, (category) => category.providers)
   @JoinColumn({ name: 'type' })
   type: Category
 
-  @OneToMany(() => Product, (product) => product.category)
+  @OneToMany(() => Product, (product) => product.provider)
   products: Product[]
 }
