@@ -73,7 +73,7 @@ export class PersonalEntity {
   /**
    * The user account associated with the personal.
    */
-  @OneToOne((type) => User)
+  @OneToOne(() => User)
   @JoinColumn({ name: 'user_id' })
   user: User
 

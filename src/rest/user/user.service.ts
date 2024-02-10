@@ -17,6 +17,7 @@ import { OrdersService } from '../orders/orders.service'
 import { BcryptService } from '../utils/bcrypt/bcrypt.services'
 import { CreateOrderDto } from '../orders/dto/create-order.dto'
 import { UpdateOrderDto } from '../orders/dto/update-order.dto'
+import { PersonalEntity } from '../personal/entities/personal.entity'
 
 @Injectable()
 export class UsersService {
@@ -27,6 +28,8 @@ export class UsersService {
     private readonly usersRepository: Repository<User>,
     @InjectRepository(UserRole)
     private readonly userRoleRepository: Repository<UserRole>,
+    @InjectRepository(PersonalEntity)
+    private readonly personalEntityRepository: Repository<PersonalEntity>,
     private readonly ordersService: OrdersService,
     private readonly usersService: UsersMapper,
     private readonly bcryptService: BcryptService,
