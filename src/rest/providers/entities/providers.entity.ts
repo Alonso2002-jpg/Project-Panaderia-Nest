@@ -25,7 +25,7 @@ export class ProvidersEntity {
   /**
    * NIF del proveedor
    */
-  @Column('varchar', { length: 9, nullable: false, name: 'NIF' })
+  @Column('varchar', { length: 9, nullable: false, name: 'nif' })
   @ApiProperty({ description: 'NIF of the provider' })
   NIF: string
 
@@ -66,10 +66,6 @@ export class ProvidersEntity {
   })
   @ApiProperty({ type: Date, description: 'Update date of the provider' })
   UpdateDate: Date
-
-  // @OneToOne((type) => User)
-  // @JoinColumn({ name: 'user_id' })
-  // user: User
 
   @ManyToOne(() => Category, (category) => category.providers)
   @JoinColumn({ name: 'type' })

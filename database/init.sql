@@ -1,18 +1,19 @@
 DROP TABLE IF EXISTS "category";
 DROP SEQUENCE IF EXISTS category_id_seq;
-CREATE SEQUENCE category_id_seq INCREMENT 1 MINVALUE 1 MAXVALUE 2147483647 CACHE 1;
+CREATE SEQUENCE category_id_seq INCREMENT 1 MINVALUE 1 MAXVALUE 2147483647 START 12 CACHE 1;
 
 CREATE TABLE "public"."category" (
                                      "id" integer DEFAULT nextval('category_id_seq') NOT NULL,
-                                     "nameCategory" character varying(255) NOT NULL,
+                                     "name_category" character varying(255) NOT NULL,
                                      "created_at" timestamp DEFAULT now() NOT NULL,
                                      "updated_at" timestamp DEFAULT now() NOT NULL,
                                      "is_deleted" boolean DEFAULT false NOT NULL,
                                      CONSTRAINT "PK_9c4e4a89e3674fc9f382d733f03" PRIMARY KEY ("id"),
-                                     CONSTRAINT "UQ_e3caecf58bdabc8c17e120175e7" UNIQUE ("nameCategory")
+                                     CONSTRAINT "UQ_e3caecf58bdabc8c17e120175e7" UNIQUE ("name_category")
 ) WITH (oids = false);
 
-INSERT INTO "category" ("id", "nameCategory", "created_at", "updated_at", "is_deleted") VALUES
+INSERT INTO "category" ("id", "name_category", "created_at", "updated_at", "is_deleted") VALUES
+                                                                                            (1,	'Casher',	'2024-02-10 18:52:31.639307',	'2024-02-10 18:52:31.639307',	'f'),
                                                                                             (2,	'Candies',	'2024-02-10 18:49:34.362278',	'2024-02-10 18:49:34.362278',	'f'),
                                                                                             (3,	'Drinks',	'2024-02-10 18:49:45.516215',	'2024-02-10 18:49:45.516215',	'f'),
                                                                                             (4,	'Utensils',	'2024-02-10 18:50:01.820636',	'2024-02-10 18:50:01.820636',	'f'),
@@ -22,8 +23,7 @@ INSERT INTO "category" ("id", "nameCategory", "created_at", "updated_at", "is_de
                                                                                             (8,	'Delivery',	'2024-02-10 18:51:11.365575',	'2024-02-10 18:51:11.365575',	'f'),
                                                                                             (9,	'Wholesaler',	'2024-02-10 18:51:41.607756',	'2024-02-10 18:51:41.607756',	'f'),
                                                                                             (10,	'Supplier',	'2024-02-10 18:51:58.631583',	'2024-02-10 18:51:58.631583',	'f'),
-                                                                                            (1,	'Casher',	'2024-02-10 18:52:31.639307',	'2024-02-10 18:52:31.639307',	'f'),
-                                                                                            (12,	'Breads',	'2024-02-10 19:06:03.808511',	'2024-02-10 19:06:03.808511',	'f');
+                                                                                            (11,	'Breads',	'2024-02-10 19:06:03.808511',	'2024-02-10 19:06:03.808511',	'f');
 
 DROP TABLE IF EXISTS "personal";
 CREATE TABLE "public"."personal" (
@@ -68,17 +68,17 @@ CREATE TABLE "public"."products" (
 ) WITH (oids = false);
 
 INSERT INTO "products" ("id", "name", "price", "stock", "image", "created_at", "updated_at", "is_deleted", "category_id", "provider_id") VALUES
-                                                                                                                                             ('f1c3f5a4-bebd-4619-b136-ba2bcfbd5c9a',	'Milk Bread',	2.5,	100,	'https://via.placeholder.com/150',	'2024-02-10 19:07:02.672318',	'2024-02-10 19:07:02.672318',	'f',	12,	2),
+                                                                                                                                             ('f1c3f5a4-bebd-4619-b136-ba2bcfbd5c9a',	'Milk Bread',	2.5,	100,	'https://via.placeholder.com/150',	'2024-02-10 19:07:02.672318',	'2024-02-10 19:07:02.672318',	'f',	11,	2),
                                                                                                                                              ('8f1849c9-8885-4b3f-bd82-d919d585ce04',	'Chocolate Cookies',	3,	150,	'https://via.placeholder.com/150',	'2024-02-10 19:09:51.526924',	'2024-02-10 19:09:51.526924',	'f',	2,	1),
                                                                                                                                              ('44f01f9a-db5b-4dbf-aff4-074644a0391e',	'Mineral Water',	1,	200,	'https://via.placeholder.com/150',	'2024-02-10 19:12:09.895392',	'2024-02-10 19:12:09.895392',	'f',	3,	3),
                                                                                                                                              ('207e2679-defb-4944-9791-fc270fa62669',	'Coffee Cup',	5,	50,	'https://via.placeholder.com/150',	'2024-02-10 19:15:29.412109',	'2024-02-10 19:15:29.412109',	'f',	3,	3);
 
 DROP TABLE IF EXISTS "providers";
 DROP SEQUENCE IF EXISTS providers_id_seq;
-CREATE SEQUENCE providers_id_seq INCREMENT 1 MINVALUE 1 MAXVALUE 2147483647 CACHE 1;
+CREATE SEQUENCE providers_id_seq INCREMENT 1 MINVALUE 1 MAXVALUE 2147483647 START 5 CACHE 1;
 
 CREATE TABLE "public"."providers" (
-                                      "NIF" character varying(9) NOT NULL,
+                                      "nif" character varying(9) NOT NULL,
                                       "number" character varying NOT NULL,
                                       "type" integer,
                                       "Name" character varying(50) NOT NULL,
@@ -88,7 +88,7 @@ CREATE TABLE "public"."providers" (
                                       CONSTRAINT "PK_af13fc2ebf382fe0dad2e4793aa" PRIMARY KEY ("id")
 ) WITH (oids = false);
 
-INSERT INTO "providers" ("NIF", "number", "type", "Name", "CreationDate", "UpdateDate", "id") VALUES
+INSERT INTO "providers" ("nif", "number", "type", "Name", "CreationDate", "UpdateDate", "id") VALUES
                                                                                                   ('12345678A',	'123456789',	9,	'Sweet Distributions',	'2024-02-10 18:55:12.771199',	'2024-02-10 18:55:12.771199',	1),
                                                                                                   ('98765432B',	'987654321',	10,	'Flour and More',	'2024-02-10 18:57:14.399494',	'2024-02-10 18:57:14.399494',	2),
                                                                                                   ('87654321C',	'123987456',	10,	'Drink Suppliers',	'2024-02-10 18:58:27.746778',	'2024-02-10 18:58:27.746778',	3),
@@ -96,7 +96,7 @@ INSERT INTO "providers" ("NIF", "number", "type", "Name", "CreationDate", "Updat
 
 DROP TABLE IF EXISTS "user_roles";
 DROP SEQUENCE IF EXISTS user_roles_id_seq;
-CREATE SEQUENCE user_roles_id_seq INCREMENT 1 MINVALUE 1 MAXVALUE 2147483647 CACHE 1;
+CREATE SEQUENCE user_roles_id_seq INCREMENT 1 MINVALUE 1 MAXVALUE 2147483647 START 10 CACHE 1;
 
 CREATE TABLE "public"."user_roles" (
                                        "id" integer DEFAULT nextval('user_roles_id_seq') NOT NULL,
@@ -118,7 +118,7 @@ INSERT INTO "user_roles" ("id", "role", "user_id") VALUES
 
 DROP TABLE IF EXISTS "users";
 DROP SEQUENCE IF EXISTS users_id_seq;
-CREATE SEQUENCE users_id_seq INCREMENT 1 MINVALUE 1 MAXVALUE 9223372036854775807 CACHE 1;
+CREATE SEQUENCE users_id_seq INCREMENT 1 MINVALUE 1 MAXVALUE 9223372036854775807 START 7 CACHE 1;
 
 CREATE TABLE "public"."users" (
                                   "id" bigint DEFAULT nextval('users_id_seq') NOT NULL,

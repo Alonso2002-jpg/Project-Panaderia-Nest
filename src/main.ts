@@ -15,6 +15,7 @@ async function bootstrap() {
   }
 
   const app = await NestFactory.create(AppModule)
+  app.setGlobalPrefix(process.env.API_VERSION || 'v1')
   app.useGlobalPipes(new ValidationPipe())
   await app.listen(3000)
 }

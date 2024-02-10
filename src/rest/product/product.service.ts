@@ -321,8 +321,8 @@ export class ProductService {
     }
     const category = await this.categoryRepository
       .createQueryBuilder()
-      .where('LOWER(nameCategory) = LOWER(:nameCategory)', {
-        name: nameCategory.toLowerCase(),
+      .where('LOWER(name_category) = LOWER(:nameCategory)', {
+        nameCategory : nameCategory.toLowerCase(),
       })
       .getOne()
 
@@ -355,8 +355,8 @@ export class ProductService {
     }
     const provider: ProvidersEntity = await this.providerRepository
       .createQueryBuilder()
-      .where('LOWER(NIF) = LOWER(:nifProvider)', {
-        nif: nifProvider.toLowerCase(),
+      .where('LOWER(nif) = LOWER(:nifProvider)', {
+        nifProvider: nifProvider.toLowerCase(),
       })
       .getOne()
 
