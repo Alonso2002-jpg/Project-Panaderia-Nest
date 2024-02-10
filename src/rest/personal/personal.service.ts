@@ -11,6 +11,7 @@ import {hash} from 'typeorm/util/StringUtils'
 import {Cache} from 'cache-manager'
 import {ResponsePersonalDto} from "./dto/response-personal.dto";
 import {FilterOperator, FilterSuffix, paginate, PaginateQuery} from "nestjs-paginate";
+import {v4 as uuidv4} from 'uuid'
 
 /**
  * Service that handles business logic for personal records management.
@@ -35,15 +36,49 @@ export class PersonalService {
      * @param {CreatePersonalDto} createPersonalDto - DTO containing the data for the new personal.
      * @returns {Promise<ResponsePersonalDto>} The newly created personal record as a DTO.
      */
-    async create(
-        createPersonalDto: CreatePersonalDto,
-    ): Promise<ResponsePersonalDto> {
-        this.logger.log('Creating new staff: {createPersonalDto}')
-        const category = await this.checkCategory(createPersonalDto.section)
-        const newStaff = this.personalMapper.toEntity(createPersonalDto, category)
-        const createdStaff = await this.personalRepository.save(newStaff)
-        const dto = this.personalMapper.toResponseDto(createdStaff)
-        return dto
+    async create(createPersonalDto: CreatePersonalDto): Promise<ResponsePersonalDto> {
+        this.logger.log(`Creating new staff member: ${JSON.stringify(createPersonalDto)}`);
+        let idTemp: string;
+        const personalNameExist: PersonalEntity = await this.personalRepository.findOne({
+            where: {name: createPersonalDto.name}
+        });
+
+        if (personalNameExist) {
+            if (!personalNameExist.isActive) {
+                throw new BadRequestException(`A staff member with the name ${createPersonalDto.name} already exists`);
+            } else {
+                idTemp = personalNameExist.id;
+            }
+        }
+
+        const category = await this.checkCategory(createPersonalDto.section);
+        const newStaff = this.personalMapper.toEntity(createPersonalDto, category);
+        const createdStaff = await this.personalRepository.save({
+            ...newStaff,
+            id: idTemp || uuidv4(),
+        });
+        const response: ResponsePersonalDto = this.personalMapper.toResponseDto(createdStaff);
+
+
+        await this.invalidateCacheKey('all_staff');
+
+        return response;
+    }
+
+    async invalidateCacheKey(keyPattern: string): Promise<void> {
+        const cacheKeys = await this.cacheManager.store.keys()
+        const keysToDelete = cacheKeys.filter((key) => key.startsWith(keyPattern))
+        const promises = keysToDelete.map((key) => this.cacheManager.del(key))
+        await Promise.all(promises)
+    }
+
+    async findByUserId(id: number) {
+        this.logger.log('findByUserId: ${id}')
+        return await this.personalRepository
+            .createQueryBuilder('personal')
+            .leftJoinAndSelect('personal.section', 'category')
+            .where('personal.id = :id', {id})
+            .getOne()
     }
 
 
