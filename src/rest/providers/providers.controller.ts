@@ -29,8 +29,7 @@ import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard'
 import { BodyValidatorPipe } from '../utils/pipes/body-validator.pipe'
 import { IntValidatorPipe } from '../utils/pipes/int-validator.pipe'
 import { CacheInterceptor, CacheKey, CacheTTL } from '@nestjs/cache-manager'
-import { RolsExistsGuard } from "../user/guards/rols.exists.guard";
-@UseGuards(JwtAuthGuard, RolsExistsGuard)
+@UseGuards(JwtAuthGuard, RolesAuthGuard)
 @ApiTags('providers')
 @UseInterceptors(CacheInterceptor)
 @Controller('providers')
@@ -50,7 +49,6 @@ export class ProvidersController {
    * Metodo para devolver todos los Proveedores
    * @returns {Promise<ProvidersEntity[]>} Lista de proveedores
    */
-  @UseGuards(JwtAuthGuard, RolesAuthGuard)
   @Roles('ADMIN')
   @CacheKey('all_providers')
   @CacheTTL(30)
@@ -76,7 +74,6 @@ export class ProvidersController {
    * @param {string} id ID del proveedor
    * @returns {Promise<ProvidersEntity>} Entidad de proveedor
    */
-  @UseGuards(JwtAuthGuard, RolesAuthGuard)
   @Roles('ADMIN')
   @Get(':id')
   @HttpCode(200)
@@ -97,7 +94,6 @@ export class ProvidersController {
    * @param {ProvidersEntity} Providers Entidad de proveedor
    * @returns {Promise<ProvidersEntity>} Entidad de proveedor
    */
-  @UseGuards(JwtAuthGuard, RolesAuthGuard)
   @Roles('ADMIN')
   @Post()
   @HttpCode(201)
@@ -121,7 +117,6 @@ export class ProvidersController {
    * @param {ProvidersEntity} Providers entidad de Proveedor
    * @returns {Promise<ProvidersEntity>} entidad de Proveedor
    */
-  @UseGuards(JwtAuthGuard, RolesAuthGuard)
   @Roles('ADMIN')
   @Put(':id')
   @HttpCode(200)
@@ -148,7 +143,6 @@ export class ProvidersController {
    */
   @Delete(':id')
   @HttpCode(204)
-  @UseGuards(JwtAuthGuard, RolesAuthGuard)
   @Roles('ADMIN')
   @ApiBearerAuth()
   @ApiOperation({
