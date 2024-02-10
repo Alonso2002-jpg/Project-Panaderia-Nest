@@ -11,8 +11,7 @@ import { Category } from '../../category/entities/category.entity'
 import { Product } from '../../product/entities/product.entity'
 
 /**
- * Entity class for Providers
- * @Author: Laura Garrido
+ * Entidad de Proveedores a cargo de las propiedades de Providers
  */
 @Entity('providers')
 export class ProvidersEntity {
