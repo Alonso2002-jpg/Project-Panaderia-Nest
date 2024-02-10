@@ -27,7 +27,7 @@ INSERT INTO "category" ("id", "nameCategory", "created_at", "updated_at", "is_de
 
 DROP TABLE IF EXISTS "personal";
 CREATE TABLE "public"."personal" (
-                                     "id" uuid DEFAULT uuid_generate_v4() NOT NULL,
+                                     "id" uuid NOT NULL,
                                      "name" character varying NOT NULL,
                                      "dni" character varying NOT NULL,
                                      "email" character varying NOT NULL,
