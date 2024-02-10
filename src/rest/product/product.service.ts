@@ -15,7 +15,7 @@ import { Category } from '../category/entities/category.entity'
 import { ResponseProductDto } from './dto/response-product.dto'
 import { hash } from 'typeorm/util/StringUtils'
 import { v4 as uuidv4 } from 'uuid'
-import { ProvidersEntity } from '../Providers/entities/Providers.entity'
+import { ProvidersEntity } from '../providers/entities/providers.entity'
 import { Cache } from 'cache-manager'
 import { CACHE_MANAGER } from '@nestjs/cache-manager'
 import {
