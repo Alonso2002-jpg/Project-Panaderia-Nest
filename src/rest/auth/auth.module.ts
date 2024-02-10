@@ -18,25 +18,21 @@ import { UsersMapper } from '../user/mapper/users.mapper'
 import { BcryptService } from '../utils/bcrypt/bcrypt.services'
 import { Product } from '../product/entities/product.entity'
 import { OrderMapper } from '../orders/mappers/orders.mapper'
-
+import * as process from 'process'
 @Module({
   imports: [
-    // Configuración edl servicio de JWT
     JwtModule.register({
-      // Lo voy a poner en base64
       secret: Buffer.from(
-        process.env.TOKEN_SECRET ||
-          'Me_Gustan_Los_Pepinos_De_Leganes_Porque_Son_Grandes_Y_Hermosos',
+        process.env.JWT_SECRET ||
+          'La_Mejor_Panaderia_Del_Mundo_XD',
         'utf-8',
       ).toString('base64'),
       signOptions: {
-        expiresIn: Number(process.env.TOKEN_EXPIRES) || 3600, // Tiempo de expiracion
-        algorithm: 'HS512', // Algoritmo de encriptacion
+        expiresIn: Number(process.env.JWT_EXPIRATION_TIME) || 3600,
+        algorithm: 'HS512',
       },
     }),
-    // Importamos el módulo de passport con las estrategias
     PassportModule.register({ defaultStrategy: 'jwt' }),
-    // Importamos el módulo de usuarios porque usaremos su servicio
     UserModule,
     MongooseModule.forFeatureAsync([
       {

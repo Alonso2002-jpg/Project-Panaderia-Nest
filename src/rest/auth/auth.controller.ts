@@ -29,18 +29,18 @@ export class AuthController {
   @ApiResponse({
     status: 200,
     description:
-      'El usuario se ha logueado correctamente devolviendo el token de acceso',
+      'The user has logged in successfully, returning the access token.',
     type: String,
   })
   @ApiBody({
-    description: 'Credenciales de acceso',
+    description: 'Access credentials.',
     type: UserSignInDto,
   })
   @ApiInternalServerErrorResponse({
-    description: 'Error interno de la api en bases de datos',
+    description: 'Internal API error in databases.',
   })
   @ApiBadRequestResponse({
-    description: 'Error en los datos de entrada',
+    description: 'Error in input data.',
   })
   async singIn(@Body() userSignInDto: UserSignInDto) {
     this.logger.log(`singIn: ${JSON.stringify(userSignInDto)}`)
