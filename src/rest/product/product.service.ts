@@ -193,7 +193,7 @@ export class ProductService {
       .createQueryBuilder('product')
       .leftJoinAndSelect('product.category', 'category')
       .leftJoinAndSelect('product.provider', 'provider')
-      .where('producty.id = :id', { id })
+      .where('product.id = :id', { id })
       .getOne()
     if (!productFound || productFound.isDeleted) {
       this.logger.log(`Product with id ${id} not found.`)
