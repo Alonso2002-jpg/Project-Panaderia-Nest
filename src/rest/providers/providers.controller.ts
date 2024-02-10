@@ -29,7 +29,8 @@ import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard'
 import { BodyValidatorPipe } from '../utils/pipes/body-validator.pipe'
 import { IntValidatorPipe } from '../utils/pipes/int-validator.pipe'
 import { CacheInterceptor, CacheKey, CacheTTL } from '@nestjs/cache-manager'
-
+import { RolsExistsGuard } from "../user/guards/rols.exists.guard";
+@UseGuards(JwtAuthGuard, RolsExistsGuard)
 @ApiTags('providers')
 @UseInterceptors(CacheInterceptor)
 @Controller('providers')
@@ -41,14 +42,16 @@ export class ProvidersController {
 
   /**
    * Constructor metodo para ProvidersController
-   * @param {ProvidersService} providersService ProvidersService dependency
+   * @param {ProvidersService} providersService Dependencia de ProvidersService
    */
   constructor(private readonly providersService: ProvidersService) {}
 
   /**
-   * findAll metodo para devolver todos los Proveedores
+   * Metodo para devolver todos los Proveedores
    * @returns {Promise<ProvidersEntity[]>} Lista de proveedores
    */
+  @UseGuards(JwtAuthGuard, RolesAuthGuard)
+  @Roles('ADMIN')
   @CacheKey('all_providers')
   @CacheTTL(30)
   @Get()
@@ -69,10 +72,12 @@ export class ProvidersController {
   }
 
   /**
-   * findOne metodo para buscar proveedores por su id
-   * @param {string} id Providers id
-   * @returns {Promise<ProvidersEntity>} Providers entity
+   * Metodo para buscar proveedores por su id
+   * @param {string} id ID del proveedor
+   * @returns {Promise<ProvidersEntity>} Entidad de proveedor
    */
+  @UseGuards(JwtAuthGuard, RolesAuthGuard)
+  @Roles('ADMIN')
   @Get(':id')
   @HttpCode(200)
   @ApiOperation({
@@ -88,9 +93,9 @@ export class ProvidersController {
   }
 
   /**
-   * create metodo para crear un proveedor
-   * @param {ProvidersEntity} Providers Providers entity
-   * @returns {Promise<ProvidersEntity>} Providers entity
+   * Metodo para crear un proveedor
+   * @param {ProvidersEntity} Providers Entidad de proveedor
+   * @returns {Promise<ProvidersEntity>} Entidad de proveedor
    */
   @UseGuards(JwtAuthGuard, RolesAuthGuard)
   @Roles('ADMIN')
@@ -111,10 +116,10 @@ export class ProvidersController {
   }
 
   /**
-   * Update metodo para actualizar un proveedor
-   * @param {string} id Proveedor id
-   * @param {ProvidersEntity} Providers Proveedor entidad
-   * @returns {Promise<ProvidersEntity>} Proveedor entidad
+   * Metodo para actualizar un proveedor
+   * @param {string} id ID del proveedor
+   * @param {ProvidersEntity} Providers entidad de Proveedor
+   * @returns {Promise<ProvidersEntity>} entidad de Proveedor
    */
   @UseGuards(JwtAuthGuard, RolesAuthGuard)
   @Roles('ADMIN')
@@ -137,7 +142,7 @@ export class ProvidersController {
   }
 
   /**
-   * remove metodo para eliminar un proveedor
+   * Metodo para eliminar un proveedor
    * @param {string} id Providers id
    * @returns {Promise<void>}
    */

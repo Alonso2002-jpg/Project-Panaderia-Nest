@@ -31,10 +31,25 @@ import {
 } from '../../websockets/notification/model/notification.model'
 import { StorageService } from '../storage/storage.service'
 
+/**
+ * Servicio de gestiOn de productos.
+ * Este servicio proporciona mEtodos para realizar operaciones CRUD en productos,
+ * asI como mEtodos para buscar productos, crear, actualizar y eliminar productos.
+ */
 @Injectable()
 export class ProductService {
   private readonly logger = new Logger(ProductService.name)
 
+  /**
+   * Constructor del servicio ProductService.
+   * @param productRepository Repositorio para acceder a los datos de los productos.
+   * @param categoryRepository Repositorio para acceder a los datos de las categorIas.
+   * @param providerRepository Repositorio para acceder a los datos de los proveedores.
+   * @param productMapper Mapper para convertir entre DTO y entidades de productos.
+   * @param storageService Servicio para la gestiOn de almacenamiento de archivos.
+   * @param productsNotifications Servicio para enviar notificaciones relacionadas con productos.
+   * @param cacheManager Administrador de cachE para almacenar en cachE los resultados de consulta.
+   */
   constructor(
     @InjectRepository(Product)
     private readonly productRepository: Repository<Product>,
@@ -48,6 +63,11 @@ export class ProductService {
     @Inject(CACHE_MANAGER) private cacheManager: Cache,
   ) {}
 
+  /**
+   * Metodo para buscar todos los productos.
+   * @param query Objeto de consulta para paginacion y filtrado.
+   * @returns Una lista paginada de productos.
+   */
   async findAll(query: PaginateQuery) {
     this.logger.log('Finding all products')
 
@@ -93,6 +113,13 @@ export class ProductService {
     return res
   }
 
+  /**
+   * Metodo para crear un nuevo producto.
+   *
+   * @param createProductDto DTO que contiene los datos para crear el producto.
+   * @return DTO del producto creado.
+   * @throws BadRequestException Si ya existe un producto con el mismo nombre y no esta eliminado.
+   */
   async create(
     createProductDto: CreateProductDto,
   ): Promise<ResponseProductDto> {
@@ -128,6 +155,12 @@ export class ProductService {
     return response
   }
 
+  /**
+   * Metodo privado para buscar un producto por su nombre en la base de datos.
+   *
+   * @param productName El nombre del producto a buscar.
+   * @return Una promesa que se resuelve con el producto encontrado o undefined si no se encuentra.
+   */
   private async findProductByName(productName: string) {
     return await this.productRepository
       .createQueryBuilder()
@@ -137,6 +170,16 @@ export class ProductService {
       .getOne()
   }
 
+  /**
+   * Recupera un producto de la base de datos mediante su identificador unico.
+   *
+   * Este metodo recupera una entidad de producto por su ID, poblandola con entidades de categoria y proveedor asociadas.
+   * Si el producto se encuentra en la cache, se devuelve directamente. De lo contrario, se obtiene de la base de datos.
+   *
+   * @param id El identificador unico del producto a recuperar.
+   * @return Una promesa que resuelve al ResponseProductDto que representa el producto recuperado.
+   * @throws NotFoundException Si no se encuentra ningun producto con el ID especificado o si esta marcado como eliminado.
+   */
   async findOne(id: string): Promise<ResponseProductDto> {
     this.logger.log(`Find product by id:${id}`)
     const cache: ResponseProductDto = await this.cacheManager.get(
@@ -161,6 +204,18 @@ export class ProductService {
     return productsResponse
   }
 
+  /**
+   * Actualiza un producto existente en la base de datos.
+   *
+   * Este metodo actualiza los detalles de un producto existente, identificado por su ID unico,
+   * con la informacion proporcionada en el objeto UpdateProductDto.
+   *
+   * @param id El ID unico del producto a actualizar.
+   * @param updateProductDto El objeto que contiene los detalles actualizados del producto.
+   * @return Una promesa que resuelve al ResponseProductDto que representa el producto actualizado.
+   * @throws NotFoundException Si no se encuentra el producto con el ID especificado o si está marcado como eliminado.
+   * @throws BadRequestException Si se intenta cambiar el nombre del producto a uno que ya existe y no esta eliminado.
+   */
   async update(
     id: string,
     updateProductDto: UpdateProductDto,
@@ -216,6 +271,16 @@ export class ProductService {
     return productResponse
   }
 
+  /**
+   * Elimina un producto de la base de datos.
+   *
+   * Este metodo marca un producto como eliminado en la base de datos, identificado por su ID unico.
+   * Si el producto no se encuentra o ya esta marcado como eliminado, se lanza una excepcion NotFoundException.
+   *
+   * @param id El ID unico del producto a eliminar.
+   * @return El DTO del producto eliminado.
+   * @throws NotFoundException Si no se encuentra el producto con el ID especificado o si ya esta marcado como eliminado.
+   */
   async remove(id: string) {
     this.logger.log(`Removing product by id: ${id}`)
     const productToRemove = await this.exists(id)
@@ -235,6 +300,17 @@ export class ProductService {
     return response
   }
 
+  /**
+   * Busca una categoria en la base de datos por su nombre.
+   *
+   * Este metodo busca una categoria por su nombre en la base de datos.
+   * Si la categoria se encuentra en la cache, se devuelve directamente. De lo contrario, se busca en la base de datos.
+   * Si la categoria no se encuentra o esta marcada como eliminada, se lanza una excepcion BadRequestException.
+   *
+   * @param nameCategory El nombre de la categoria a buscar.
+   * @return Una promesa que se resuelve con la categoria encontrada.
+   * @throws BadRequestException Si la categoria no se encuentra o esta marcada como eliminada.
+   */
   async findCategory(nameCategory: string): Promise<Category> {
     const cache: Category = await this.cacheManager.get(
       `category_${nameCategory}`,
@@ -258,6 +334,17 @@ export class ProductService {
     return category
   }
 
+  /**
+   * Busca un proveedor en la base de datos.
+   *
+   * Este metodo busca un proveedor por su NIF en la base de datos.
+   * Si el proveedor se encuentra en la cache, se devuelve directamente. De lo contrario, se busca en la base de datos.
+   * Si el proveedor no se encuentra, se lanza una excepcion BadRequestException.
+   *
+   * @param nifProvider El NIF del proveedor a buscar.
+   * @return Una promesa que se resuelve con el proveedor encontrado.
+   * @throws BadRequestException Si el proveedor no se encuentra.
+   */
   async findProvider(nifProvider: string): Promise<ProvidersEntity> {
     const cache: ProvidersEntity = await this.cacheManager.get(
       `provider_${nifProvider}`,
@@ -281,6 +368,15 @@ export class ProductService {
     return provider
   }
 
+  /**
+   * Envia una notificacion de cambio de producto a traves del servicio de notificaciones.
+   *
+   * Este metodo crea una notificacion de cambio de producto con el tipo y los datos proporcionados,
+   * y luego la envia a traves del servicio de notificaciones.
+   *
+   * @param tipo El tipo de cambio de producto (CREATE, UPDATE o DELETE).
+   * @param data Los datos del producto afectado por el cambio.
+   */
   private onChange(tipo: NotificationType, data: ResponseProductDto) {
     const notificacion = new Notification<ResponseProductDto>(
       'PRODUCTS',
@@ -291,6 +387,21 @@ export class ProductService {
     this.productsNotifications.sendMessage(notificacion)
   }
 
+  /**
+   * Actualiza la imagen de un producto en la base de datos.
+   *
+   * Este metodo actualiza la imagen de un producto existente identificado por su ID unico.
+   * Primero verifica si el producto existe y no esta marcado como eliminado.
+   * Si el producto tiene una imagen predeterminada, la elimina del almacenamiento.
+   * Luego, guarda la nueva imagen proporcionada en el producto y actualiza el registro en la base de datos.
+   * Finalmente, notifica sobre la actualizacion de la imagen y actualiza las claves de cache relacionadas con el producto.
+   *
+   * @param id El ID unico del producto cuya imagen se va a actualizar.
+   * @param file El archivo de imagen proporcionado para actualizar la imagen del producto.
+   * @return El DTO del producto con la imagen actualizada.
+   * @throws NotFoundException Si no se encuentra el producto con el ID especificado o si esta marcado como eliminado.
+   * @throws BadRequestException Si el archivo de imagen no se proporciona.
+   */
   public async updateImage(id: string, file: Express.Multer.File) {
     this.logger.log(`Updating product img by id: ${id}`)
     const productToUpdate = await this.exists(id)
@@ -326,6 +437,17 @@ export class ProductService {
     return productResponse
   }
 
+  /**
+   * Verifica la existencia de un producto en la base de datos por su ID.
+   *
+   * Este metodo verifica si un producto existe en la base de datos utilizando su ID unico.
+   * Primero verifica si el producto esta en la cache y lo devuelve si se encuentra.
+   * Si no esta en la cache, busca el producto en la base de datos.
+   * Si se encuentra en la base de datos y no está marcado como eliminado, lo guarda en la caché y lo devuelve.
+   *
+   * @param id El ID unico del producto a verificar.
+   * @return Una promesa que se resuelve con el producto si existe; de lo contrario, se resuelve con null.
+   */
   public async exists(id: string): Promise<Product> {
     const cache: Product = await this.cacheManager.get(`product_entity_${id}`)
     if (cache) {
@@ -344,6 +466,17 @@ export class ProductService {
     return product
   }
 
+  /**
+   * Invalida las claves de cache que coinciden con el patron especificado.
+   *
+   * Este metodo invalida todas las claves de cache que coinciden con el patron proporcionado.
+   * Primero obtiene todas las claves de cache del almacenamiento.
+   * Luego filtra las claves que coinciden con el patron especificado.
+   * Finalmente, elimina las claves de cache filtradas.
+   *
+   * @param keyPattern El patron de clave de cache que se utilizara para invalidar las claves.
+   * @return Una promesa que se resuelve una vez que se han invalidado todas las claves de cache correspondientes.
+   */
   async invalidateCacheKey(keyPattern: string): Promise<void> {
     const cacheKeys = await this.cacheManager.store.keys()
     const keysToDelete = cacheKeys.filter((key) => key.startsWith(keyPattern))

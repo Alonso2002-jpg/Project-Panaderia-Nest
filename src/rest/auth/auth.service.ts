@@ -63,7 +63,7 @@ export class AuthService {
       }
     } catch (error) {
       this.logger.error(error)
-      throw new InternalServerErrorException('Error al generar el token')
+      throw new InternalServerErrorException('Error generating the token.')
     }
   }
 }
