@@ -10,7 +10,7 @@ import { User } from './user.entity'
 export enum Role {
   USER = 'USER',
   ADMIN = 'ADMIN',
-  SELLET = 'SELLET',
+  SELLER = 'SELLER',
 }
 
 @Entity({ name: 'user_roles' })
