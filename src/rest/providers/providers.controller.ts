@@ -22,17 +22,17 @@ import {
   ApiInternalServerErrorResponse,
   ApiBearerAuth,
 } from '@nestjs/swagger'
-import { CacheInterceptor, CacheKey, CacheTTL } from '@nestjs/common/cache'
 import { Paginate, PaginateQuery } from 'nestjs-paginate'
 import { UpdateProvidersDto } from './dto/update-providers.dto'
 import { Roles, RolesAuthGuard } from '../auth/guards/rols-auth.guard'
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard'
 import { BodyValidatorPipe } from '../utils/pipes/body-validator.pipe'
 import { IntValidatorPipe } from '../utils/pipes/int-validator.pipe'
+import { CacheInterceptor, CacheKey, CacheTTL } from '@nestjs/cache-manager'
 
 @ApiTags('providers')
 @UseInterceptors(CacheInterceptor)
-@Controller('Providers')
+@Controller('providers')
 /**
  * Controlador de Proveedores a cargo de manejar con las solicitudes de proveedores
  */
@@ -82,11 +82,9 @@ export class ProvidersController {
   @ApiParam({ name: 'id', description: 'Provider ID' })
   @ApiResponse({ status: 200, description: 'Success', type: ProvidersEntity })
   @ApiResponse({ status: 404, description: 'Provider not found' })
-  findOne(
-    @Param('id', new IntValidatorPipe()) id: number,
-  ): Promise<ProvidersEntity> {
+  async findOne(@Param('id', new IntValidatorPipe()) id: number) {
     this.logger.log(`Obtaining provider with ID: ${id}`)
-    return this.providersService.findOne(+id)
+    return await this.providersService.findOne(+id)
   }
 
   /**
@@ -105,11 +103,11 @@ export class ProvidersController {
   @ApiResponse({ status: 201, description: 'Created', type: ProvidersEntity })
   @ApiBadRequestResponse({ description: 'Bad request' })
   @ApiInternalServerErrorResponse({ description: 'Internal server error' })
-  create(
+  async create(
     @Body(new BodyValidatorPipe()) Providers: ProvidersEntity,
   ): Promise<ProvidersEntity> {
     this.logger.log('Creating a new provider')
-    return this.providersService.create(Providers)
+    return await this.providersService.create(Providers)
   }
 
   /**
@@ -130,12 +128,12 @@ export class ProvidersController {
   @ApiResponse({ status: 200, description: 'Success', type: ProvidersEntity })
   @ApiResponse({ status: 404, description: 'Provider not found' })
   @ApiBadRequestResponse({ description: 'Bad request' })
-  update(
+  async update(
     @Param('id', new IntValidatorPipe()) id: number,
     @Body(new BodyValidatorPipe()) Providers: UpdateProvidersDto,
   ): Promise<ProvidersEntity> {
     this.logger.log(`Updating provider with ID: ${id}`)
-    return this.providersService.update(+id, Providers)
+    return await this.providersService.update(+id, Providers)
   }
 
   /**
@@ -155,8 +153,8 @@ export class ProvidersController {
   @ApiParam({ name: 'id', description: 'Provider ID' })
   @ApiResponse({ status: 204, description: 'No content' })
   @ApiResponse({ status: 404, description: 'Provider not found' })
-  remove(@Param('id', new IntValidatorPipe()) id: string): Promise<void> {
+  async remove(@Param('id', new IntValidatorPipe()) id: string): Promise<void> {
     this.logger.log(`Deleting provider with ID: ${id}`)
-    return this.providersService.remove(+id)
+    return await this.providersService.remove(+id)
   }
 }

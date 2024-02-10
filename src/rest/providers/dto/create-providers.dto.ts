@@ -1,5 +1,5 @@
-import { IsNotEmpty, IsString, Length, Matches } from 'class-validator';
-import { ApiProperty } from '@nestjs/swagger';
+import { IsNotEmpty, IsString, Length, Matches } from 'class-validator'
+import { ApiProperty } from '@nestjs/swagger'
 /**
  * Dto para crear un proveedor
  * @property {string} NIF - NIF del proveedor
@@ -20,7 +20,7 @@ export class CreateProvidersDto {
     minLength: 9,
     maxLength: 9,
   })
-  NIF: string;
+  NIF: string
 
   /**
    * Numero del proveedor
@@ -33,7 +33,7 @@ export class CreateProvidersDto {
     description: 'Number of the provider in the format XXX-XX-XXXX',
     pattern: '^[0-9]{3}-[0-9]{2}-[0-9]{4}$',
   })
-  number: string;
+  number: string
 
   /**
    * Nombre del proveedor
@@ -48,5 +48,5 @@ export class CreateProvidersDto {
     minLength: 2,
     maxLength: 50,
   })
-  name: string;
+  name: string
 }
