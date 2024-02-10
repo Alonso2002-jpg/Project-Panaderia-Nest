@@ -30,7 +30,6 @@ import { CreateProvidersDto } from './dto/create-providers.dto'
 
 /**
  * Servicio de Providers a cargo de manejar las solicitudes de los proveedores
- * @Author: Laura Garrido
  */
 @ApiTags('providers')
 @Injectable()
@@ -116,8 +115,9 @@ export class ProvidersService {
 
   /**
    * Encuentra un proveedor por su ID
-   * @param {number} id
-   * @returns ProvidersEntity
+   * @param {number} id - Identificador unico del proveedor a buscar
+   * @returns ProvidersEntity - El proveedor encontrado
+   * @throws {NotFoundException} - Si no se encuentra el proveedor con el ID especificado
    */
   @ApiOperation({
     summary: 'Get a provider by ID from the service',
@@ -138,8 +138,8 @@ export class ProvidersService {
   }
   /**
    * Crea un nuevo proveedor
-   * @param {ProvidersEntity} provider
-   * @returns ProvidersEntity
+   * @param {ProvidersEntity} provider El proveedor a crear
+   * @returns ProvidersEntity El proveedor creado
    */
   @ApiOperation({
     summary: 'Create a new provider from the service',
@@ -153,11 +153,13 @@ export class ProvidersService {
     this.onChange(NotificationType.CREATE, savedProviders)
     return savedProviders
   }
+
   /**
-   * Actualizar un proveedor por su ID
-   * @param {number} id
-   * @param updatedProvider
-   * @returns ProvidersEntity
+   * Actualiza un proveedor por su ID en el servicio
+   * @param id el id del proveedor a actualizar
+   * @param updatedProvider las propiedades del proveedor a actualizar
+   * @returns El Provedor actualizado.
+   * @throws {BadRequestException} Si el proveedor no se encuentra.
    */
   @ApiOperation({
     summary: 'Update a provider from the service',
@@ -188,8 +190,8 @@ export class ProvidersService {
   }
 
   /**
-   * Elimina un proveedor por su ID
-   * @param {number} id
+   * Elimina un Proveedor de la lista en memoria mediante su ID.
+   * @param id El ID del Proveedor a eliminar.
    * @returns void
    */
   // Deletes a Provider from the list in memory by its ID.
@@ -215,11 +217,10 @@ export class ProvidersService {
   }
 
   /**
-   * Consigue el siguiente id disponible
-   * @returns number
+   * Envía una notificación a los clientes de WebSocket cuando se crea, actualiza o elimina un Proveedor.
+   * @param type El tipo de notificación a enviar.
+   * @param data La información del proveedor que se notificará.
    */
-  // Private Method to obtain the next ID available.
-
   onChange(type: NotificationType, data: ProvidersEntity) {
     const dataToSend = this.providersMapper.mapResponse(data)
     const notification = new Notification<ProvidersResponseDto>(

@@ -3,7 +3,6 @@ import { ApiProperty } from '@nestjs/swagger';
 
 /**
  * Dto para actualizar un proveedor en la base de datos de Providers
- * @Author: Laura Garrido
  */
 export class UpdateProvidersDto {
   /**
