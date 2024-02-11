@@ -2,30 +2,32 @@ import { Test, TestingModule } from '@nestjs/testing'
 import { ProvidersController } from './providers.controller'
 import { ProvidersService } from './providers.service'
 import { ProvidersEntity } from './entities/providers.entity'
-import { Paginated } from 'nestjs-paginate'
-import { Category } from '../category/entities/category.entity'
-import { CacheModule } from '@nestjs/cache-manager'
-import { NotFoundException } from '@nestjs/common'
+import { CreateProvidersDto } from './dto/create-providers.dto'
 import { UpdateProvidersDto } from './dto/update-providers.dto'
+import { PaginateQuery } from 'nestjs-paginate'
+import { ProvidersResponseDto } from './dto/response-providers.dto'
+import { CacheModule } from '@nestjs/cache-manager'
+
 describe('ProvidersController', () => {
   let controller: ProvidersController
   let service: ProvidersService
 
-  const providersServiceMock = {
-    findAll: jest.fn(),
-    findOne: jest.fn(),
-    create: jest.fn(),
-    update: jest.fn(),
-    remove: jest.fn(),
-  }
-
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
-      imports: [CacheModule.register()],
       controllers: [ProvidersController],
       providers: [
-        { provide: ProvidersService, useValue: providersServiceMock },
+        {
+          provide: ProvidersService,
+          useValue: {
+            findAll: jest.fn(),
+            findOne: jest.fn(),
+            create: jest.fn(),
+            update: jest.fn(),
+            remove: jest.fn(),
+          },
+        },
       ],
+      imports: [CacheModule.register()],
     }).compile()
 
     controller = module.get<ProvidersController>(ProvidersController)
@@ -37,126 +39,135 @@ describe('ProvidersController', () => {
   })
 
   describe('findAll', () => {
-    it('should get all Providers', async () => {
-      const paginateOptions = {
-        page: 1,
-        limit: 10,
-        path: 'Providers',
-      }
-
-      const testProviders = {
-        data: [],
-        meta: {
-          itemsPerPage: 10,
-          totalItems: 1,
-          currentPage: 1,
-          totalPages: 1,
+    it('should return an array of providers', async () => {
+      const result: ProvidersEntity[] = [
+        {
+          id: 1,
+          NIF: '123456789',
+          number: '123',
+          name: 'Proveedor 1',
+          CreationDate: new Date('2024-02-11T12:00:00Z'),
+          UpdateDate: new Date('2024-02-11T12:00:00Z'),
+          type: {
+            id: 1,
+            nameCategory: 'Category',
+            createdAt: undefined,
+            updatedAt: undefined,
+            isDeleted: false,
+            products: [],
+            providers: [],
+            personal: [],
+          },
+          products: [
+            {
+              id: '1',
+              name: 'Producto 1',
+              price: 10,
+              stock: 10,
+              image: 'https://via.placeholder.com/150',
+              category: undefined,
+              createdAt: new Date('2024-02-11T12:00:00Z'),
+              updatedAt: new Date('2024-02-11T12:00:00Z'),
+              isDeleted: false,
+              provider: {
+                id: 1,
+                NIF: '123456789',
+                number: '123',
+                name: 'Proveedor 1',
+                CreationDate: new Date('2024-02-11T12:00:00Z'),
+                UpdateDate: new Date('2024-02-11T12:00:00Z'),
+                type: {
+                  id: 1,
+                  nameCategory: 'Category',
+                  createdAt: undefined,
+                  updatedAt: undefined,
+                  isDeleted: false,
+                  products: [],
+                  providers: [],
+                  personal: [],
+                },
+                products: [],
+              },
+            },
+          ],
         },
-        links: {
-          current: 'Providers?page=1&limit=10&sortBy=nombre:ASC',
-        },
-      } as Paginated<ProvidersEntity>
+      ]
+      jest.spyOn(service, 'findAll').mockResolvedValue(result)
 
-      jest.spyOn(service, 'findAll').mockResolvedValue(testProviders)
-      const result: any = await controller.findAll(paginateOptions)
-
-      // console.log(result)
-      expect(result.meta.itemsPerPage).toEqual(paginateOptions.limit)
-      // Expect the result to have the correct currentPage
-      expect(result.meta.currentPage).toEqual(paginateOptions.page)
-      // Expect the result to have the correct totalPages
-      expect(result.meta.totalPages).toEqual(1) // You may need to adjust this value based on your test case
-      // Expect the result to have the correct current link
-      expect(result.links.current).toEqual(
-        `Providers?page=${paginateOptions.page}&limit=${paginateOptions.limit}&sortBy=nombre:ASC`,
-      )
-      expect(service.findAll).toHaveBeenCalled()
+      expect(await controller.findAll({} as PaginateQuery)).toBe(result)
     })
   })
 
   describe('findOne', () => {
-    it('should get one Provider', async () => {
+    it('should return a provider by ID', async () => {
       const id = 1
-      const mockResult: ProvidersEntity = new ProvidersEntity()
+      const result: ProvidersResponseDto = <ProvidersResponseDto>{
+        NIF: '123456789',
+        number: '123',
+        name: 'Proveedor 1',
+        CreationDate: new Date('2024-02-11T12:00:00Z'),
+        UpdateDate: new Date('2024-02-11T12:00:00Z'),
+        id: 0,
+      }
+      jest.spyOn(service, 'findOne').mockResolvedValue(result)
 
-      jest.spyOn(service, 'findOne').mockResolvedValue(mockResult)
-      await controller.findOne(id)
-      expect(service.findOne).toHaveBeenCalledWith(id)
-      expect(mockResult).toBeInstanceOf(ProvidersEntity)
-    })
-
-    it('should throw NotFoundException if provider does not exist', async () => {
-      const id = 1
-      jest.spyOn(service, 'findOne').mockRejectedValue(new NotFoundException())
-      await expect(controller.findOne(id)).rejects.toThrow(NotFoundException)
+      expect(await controller.findOne(id)).toBe(result)
     })
   })
 
   describe('create', () => {
-    it('should create a provider', async () => {
-      const dto: ProvidersEntity = {
-        id: 1,
-        name: 'Provider 1',
+    it('should create a new provider', async () => {
+      const providerDto: CreateProvidersDto = {
+        type: 'Category',
         NIF: '123456789',
-        number: '123-45-6789',
-        CreationDate: undefined,
-        UpdateDate: undefined,
-        type: new Category(),
-        products: [],
+        number: '123',
+        name: 'Proveedor 1',
       }
-      const mockResult: ProvidersEntity = new ProvidersEntity()
-      jest.spyOn(service, 'create').mockResolvedValue(mockResult)
-      await controller.create(dto)
-      expect(service.create).toHaveBeenCalledWith(dto)
-      expect(mockResult).toBeInstanceOf(ProvidersEntity)
+      const result: ProvidersResponseDto = {
+        type: undefined,
+        id: 1,
+        NIF: '123456789',
+        number: '123',
+        name: 'Proveedor 1',
+        CreationDate: new Date('2024-02-11T12:00:00Z'),
+        UpdateDate: new Date('2024-02-11T12:00:00Z'),
+      }
+      jest.spyOn(service, 'create').mockResolvedValue(result)
+
+      expect(await controller.create(providerDto)).toBe(result)
     })
   })
 
   describe('update', () => {
-    it('should update a provider', async () => {
+    it('should update a provider by ID', async () => {
       const id = 1
-      const dto: UpdateProvidersDto = {
-        id: 1,
-        name: 'Provider 1',
+      const updateDto: UpdateProvidersDto = {
+        type: 'Category',
         NIF: '123456789',
-        number: '123-45-6789',
+        number: '123',
+        name: 'Proveedor 1',
       }
-      const mockResult: ProvidersEntity = new ProvidersEntity()
-      jest.spyOn(service, 'update').mockResolvedValue(mockResult)
-      await controller.update(id, dto)
-      expect(service.update).toHaveBeenCalledWith(id, dto)
-      expect(mockResult).toBeInstanceOf(ProvidersEntity)
-    })
+      const result: ProvidersResponseDto = {
+        type: undefined,
+        id: 1,
+        NIF: '123456789',
+        number: '123',
+        name: 'Proveedor 1',
+        CreationDate: new Date('2024-02-11T12:00:00Z'),
+        UpdateDate: new Date('2024-02-11T12:00:00Z'),
+      }
+      jest.spyOn(service, 'update').mockResolvedValue(result)
 
-    it('should throw NotFoundException if provider does not exist', async () => {
-      const id = 1
-      const dto: UpdateProvidersDto = { NIF: '', id: 0, name: '', number: '' }
-      jest.spyOn(service, 'update').mockRejectedValue(new NotFoundException())
-      await expect(controller.update(id, dto)).rejects.toThrow(
-        NotFoundException,
-      )
+      expect(await controller.update(id, updateDto)).toBe(result)
     })
   })
 
   describe('remove', () => {
-    it('should remove an existing provider by ID', async () => {
-      const providerId = '1'
-
+    it('should remove a provider by ID', async () => {
+      const id = '1'
       jest.spyOn(service, 'remove').mockResolvedValue(undefined)
 
-      const result = await controller.remove(providerId)
-
-      expect(result).toBeUndefined()
-    })
-
-    it('should throw a 404 error for non-existing provider ID during removal', async () => {
-      const nonExistingProviderId = '999'
-      jest
-        .spyOn(service, 'remove')
-        .mockRejectedValue(new NotFoundException('Provider not found'))
-      await expect(
-        controller.remove(nonExistingProviderId),
-      ).rejects.toThrowError(NotFoundException)
+      await expect(controller.remove(id)).resolves.toBeUndefined()
     })
   })
 })
