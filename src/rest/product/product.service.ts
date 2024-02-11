@@ -15,7 +15,7 @@ import { Category } from '../category/entities/category.entity'
 import { ResponseProductDto } from './dto/response-product.dto'
 import { hash } from 'typeorm/util/StringUtils'
 import { v4 as uuidv4 } from 'uuid'
-import { ProvidersEntity } from '../Providers/entities/Providers.entity'
+import { ProvidersEntity } from '../providers/entities/providers.entity'
 import { Cache } from 'cache-manager'
 import { CACHE_MANAGER } from '@nestjs/cache-manager'
 import {
@@ -193,7 +193,7 @@ export class ProductService {
       .createQueryBuilder('product')
       .leftJoinAndSelect('product.category', 'category')
       .leftJoinAndSelect('product.provider', 'provider')
-      .where('producty.id = :id', { id })
+      .where('product.id = :id', { id })
       .getOne()
     if (!productFound || productFound.isDeleted) {
       this.logger.log(`Product with id ${id} not found.`)
@@ -321,8 +321,8 @@ export class ProductService {
     }
     const category = await this.categoryRepository
       .createQueryBuilder()
-      .where('LOWER(nameCategory) = LOWER(:nameCategory)', {
-        name: nameCategory.toLowerCase(),
+      .where('LOWER(name_category) = LOWER(:nameCategory)', {
+        nameCategory : nameCategory.toLowerCase(),
       })
       .getOne()
 
@@ -355,8 +355,8 @@ export class ProductService {
     }
     const provider: ProvidersEntity = await this.providerRepository
       .createQueryBuilder()
-      .where('LOWER(NIF) = LOWER(:nifProvider)', {
-        nif: nifProvider.toLowerCase(),
+      .where('LOWER(nif) = LOWER(:nifProvider)', {
+        nifProvider: nifProvider.toLowerCase(),
       })
       .getOne()
 

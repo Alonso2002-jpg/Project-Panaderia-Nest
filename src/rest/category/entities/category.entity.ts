@@ -20,7 +20,7 @@ export class Category {
     length: 255,
     nullable: false,
     unique: true,
-    name: 'nameCategory',
+    name: 'name_category',
   })
   nameCategory: string
   @CreateDateColumn({

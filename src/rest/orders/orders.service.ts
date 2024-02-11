@@ -41,7 +41,7 @@ export class OrdersService {
    */
   async create(createOrderDto: CreateOrderDto) {
     this.logger.log(`Creating order: ${JSON.stringify(createOrderDto)}`)
-    console.log(`Saving order: ${createOrderDto}`)
+    console.log(`Saving order: ${JSON.stringify(createOrderDto)}`)
     const orderToBeSaved = this.orderMapper.toEntity(createOrderDto)
     await this.checkOrder(orderToBeSaved)
     const orderToSave = await this.reserveStockOrder(orderToBeSaved)
@@ -161,7 +161,7 @@ export class OrdersService {
       const product = await this.productRepository.findOneBy({
         id: orderLine.idProduct,
       })
-      if (!product) {
+      if (!product || product.isDeleted == true) {
         throw new BadRequestException(
           `The product with id ${orderLine.idProduct} does not exist`,
         )
@@ -194,6 +194,9 @@ export class OrdersService {
       const product = await this.productRepository.findOneBy({
         id: orderLine1.idProduct,
       })
+      if (!product || product.isDeleted == true){
+        throw new BadRequestException(`Orderline with product ${orderLine1.idProduct} cannot be updated or deleted because it is discontinued.`)
+      }
       product.stock -= orderLine1.stock
       await this.productRepository.save(product)
       orderLine1.total = orderLine1.stock * orderLine1.priceProduct
@@ -221,6 +224,9 @@ export class OrdersService {
         const product = await this.productRepository.findOneBy({
           id: orderLine1.idProduct,
         })
+        if (!product || product.isDeleted == true){
+          throw new BadRequestException(`Orderline with product ${orderLine1.idProduct} cannot be updated or deleted because it is discontinued.`)
+        }
         product.stock += orderLine1.stock
         await this.productRepository.save(product)
       }
