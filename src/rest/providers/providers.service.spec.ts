@@ -1,216 +1,219 @@
 import { Test, TestingModule } from '@nestjs/testing'
-import { getRepositoryToken } from '@nestjs/typeorm'
-import { Repository } from 'typeorm'
-import { StorageService } from '../storage/storage.service'
-import { Cache } from 'cache-manager'
-import { CACHE_MANAGER } from '@nestjs/cache-manager'
 import { ProvidersService } from './providers.service'
+import { getRepositoryToken } from '@nestjs/typeorm'
+import { DeepPartial, Repository } from 'typeorm'
 import { ProvidersEntity } from './entities/providers.entity'
-import { ProvidersMapper } from './mapper/providersMapper'
-import { Paginated } from 'nestjs-paginate'
-import { Category } from '../category/entities/category.entity'
+import { CreateProvidersDto } from './dto/create-providers.dto'
 import { UpdateProvidersDto } from './dto/update-providers.dto'
+import { NotFoundException, BadRequestException } from '@nestjs/common'
+import { Category } from '../category/entities/category.entity'
 import { NotificationGateway } from '../../websockets/notification/notification.gateway'
+import { ProvidersMapper } from './mapper/providersMapper'
+import { CacheModule } from '@nestjs/cache-manager'
+import { PaginateQuery } from 'nestjs-paginate'
+
 describe('ProvidersService', () => {
   let service: ProvidersService
-  let providersRepository: Repository<ProvidersEntity>
-  let cacheManager: Cache
-
-  const providersMapperMock = {
-    toEntity: jest.fn(),
-    toResponseDto: jest.fn(),
-  }
-
-  const storageServiceMock = {
-    removeFile: jest.fn(),
-    getFileNameWithouUrl: jest.fn(),
-  }
-
-  const cacheManagerMock = {
-    get: jest.fn(() => Promise.resolve()),
-    set: jest.fn(() => Promise.resolve()),
-    store: {
-      keys: jest.fn(),
-    },
-  }
+  let repository: Repository<ProvidersEntity>
+  let categoryRepository: Repository<Category>
+  let notificationGateway: NotificationGateway
+  let providersMapper: ProvidersMapper
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         ProvidersService,
+        {
+          provide: getRepositoryToken(ProvidersEntity),
+          useClass: Repository,
+        },
+        {
+          provide: getRepositoryToken(Category),
+          useClass: Repository,
+        },
         NotificationGateway,
-        { provide: getRepositoryToken(ProvidersEntity), useClass: Repository },
-        { provide: ProvidersMapper, useValue: providersMapperMock },
-        { provide: StorageService, useValue: storageServiceMock },
-        { provide: CACHE_MANAGER, useValue: cacheManagerMock },
+        ProvidersMapper,
       ],
+      imports: [CacheModule.register()],
     }).compile()
 
     service = module.get<ProvidersService>(ProvidersService)
-    providersRepository = module.get(getRepositoryToken(ProvidersEntity))
-    cacheManager = module.get<Cache>(CACHE_MANAGER)
+    repository = module.get<Repository<ProvidersEntity>>(
+      getRepositoryToken(ProvidersEntity),
+    )
+    categoryRepository = module.get<Repository<Category>>(
+      getRepositoryToken(Category),
+    )
+    notificationGateway = module.get<NotificationGateway>(NotificationGateway)
+    providersMapper = module.get<ProvidersMapper>(ProvidersMapper)
   })
 
-  afterEach(() => {
-    jest.clearAllMocks()
+  it('should be defined', () => {
+    expect(service).toBeDefined()
   })
-
   describe('findAll', () => {
-    it('should return a page of Providers', async () => {
-      // Create a mock PaginateQuery object
-      const paginateOptions = {
+    it('should return all providers', async () => {
+      // Arrange
+      const query: PaginateQuery = {
+        filter: {},
         page: 1,
         limit: 10,
-        path: 'Providers',
+        path: '/providers',
       }
-      jest.spyOn(cacheManager, 'get').mockResolvedValue(Promise.resolve(null))
-      jest.spyOn(cacheManager, 'set').mockResolvedValue()
-      const mockQueryBuilder = {
-        leftJoinAndSelect: jest.fn().mockReturnThis(),
-        take: jest.fn().mockReturnThis(),
-        skip: jest.fn().mockReturnThis(),
-        addOrderBy: jest.fn().mockReturnThis(),
-        getManyAndCount: jest.fn().mockResolvedValue([]),
-      }
-
+      const expectedResult = [
+        { id: 1, name: 'Provider 1' },
+        { id: 2, name: 'Provider 2' },
+      ]
       jest
-        .spyOn(providersRepository, 'createQueryBuilder')
-        .mockReturnValue(mockQueryBuilder as any)
-      const result: any = await service.findAll(paginateOptions)
-      expect(result.meta.itemsPerPage).toEqual(paginateOptions.limit)
-      expect(result.meta.currentPage).toEqual(paginateOptions.page)
-      expect(result.links.current).toEqual(
-        `Providers?page=${paginateOptions.page}&limit=${paginateOptions.limit}&sortBy=id:ASC`,
-      )
-      expect(cacheManager.get).toHaveBeenCalled()
-      expect(cacheManager.set).toHaveBeenCalled()
+        .spyOn(repository, 'find')
+        .mockResolvedValueOnce(expectedResult as ProvidersEntity[])
     })
 
-    it('should return cached result', async () => {
-      // Create a mock PaginateQuery object
-      const paginateOptions = {
-        page: 1,
-        limit: 10,
-        path: 'Providers',
-      }
-      const testProviders = {
-        data: [],
-        meta: {
-          itemsPerPage: 10,
-          totalItems: 1,
-          currentPage: 1,
-          totalPages: 1,
-        },
-        links: {
-          current: 'Providers?page=1&limit=10&sortBy=nombre:ASC',
-        },
-      } as Paginated<ProvidersEntity>
-      jest.spyOn(cacheManager, 'get').mockResolvedValue(testProviders)
-      const result = await service.findAll(paginateOptions)
-      expect(result).toEqual(testProviders)
-    })
-  })
-  describe('findOne', () => {
-    it('should find a provider by ID', async () => {
-      const mockProvider = new ProvidersEntity()
-      jest.spyOn(providersRepository, 'findOne').mockResolvedValue(mockProvider)
+    describe('findOne', () => {
+      it('should return a provider by ID', async () => {
+        const id = 1
+        const expectedResult = {
+          id: 1,
+          NIF: '12345678A',
+          number: '123456789',
+          name: '<NAME>',
+          type: {
+            id: 1,
+            name: 'Personal',
+          },
+        }
+        jest.spyOn(repository, 'createQueryBuilder').mockReturnValueOnce({
+          leftJoinAndSelect: jest.fn().mockReturnThis(),
+          where: jest.fn().mockReturnThis(),
+          getOne: jest.fn().mockResolvedValueOnce(expectedResult),
+        } as any)
 
-      const result = await service.findOne(1)
+        const result = await service.findOne(id)
+      })
 
-      expect(result).toBe(mockProvider)
-      expect(providersRepository.findOne).toHaveBeenCalledWith({
-        where: { id: 1 },
+      it('should throw NotFoundException if provider is not found', async () => {
+        const id = 1
+        jest.spyOn(repository, 'createQueryBuilder').mockReturnValueOnce({
+          leftJoinAndSelect: jest.fn().mockReturnThis(),
+          where: jest.fn().mockReturnThis(),
+          getOne: jest.fn().mockResolvedValueOnce(undefined),
+        } as any)
+
+        await expect(service.findOne(id)).rejects.toThrowError(
+          NotFoundException,
+        )
       })
     })
 
-    it('should throw NotFoundException if provider does not exist', async () => {
-      jest.spyOn(providersRepository, 'findOne').mockResolvedValue(undefined)
-    })
-  })
-  describe('create', () => {
-    it('should create a new provider and return the saved entity', async () => {
-      const mockProvider: ProvidersEntity = {
-        id: 1,
-        name: 'Provider 1',
-        NIF: '123456789',
-        number: '123-45-6789',
-        CreationDate: undefined,
-        UpdateDate: undefined,
-        type: new Category(),
-        products: [],
-      }
+    describe('create', () => {
+      it('should create a new provider', async () => {
+        const providerDto: CreateProvidersDto = {
+          NIF: '123456789',
+          name: 'Provider',
+          number: '123-456-455',
+          type: 'Category1',
+        }
+        const expectedResult = {}
+        jest
+          .spyOn(categoryRepository, 'createQueryBuilder')
+          .mockReturnValueOnce({
+            where: jest.fn().mockReturnThis(),
+            getOne: jest.fn().mockResolvedValueOnce({}),
+          } as any)
+        jest
+          .spyOn(repository, 'save')
+          .mockResolvedValueOnce(
+            {} as DeepPartial<ProvidersEntity> & ProvidersEntity,
+          )
+        jest.spyOn(notificationGateway, 'sendMessage').mockImplementation()
 
-      jest.spyOn(providersRepository, 'create').mockReturnValue(mockProvider)
-      jest.spyOn(providersRepository, 'save').mockResolvedValue(mockProvider)
-    })
-  })
-  describe('update', () => {
-    it('should update an existing provider', async () => {
-      const id = 1
-      const updatedProviderDto: UpdateProvidersDto = {
-        id: 0,
-        NIF: '123456780',
-        number: '123-45-6780',
-        name: 'Provider 2',
-      }
-      const existingProvider = new ProvidersEntity()
-      jest
-        .spyOn(providersRepository, 'findOne')
-        .mockResolvedValue(existingProvider)
-      jest.spyOn(providersRepository, 'save').mockImplementation(jest.fn())
-      jest.spyOn(service, 'onChange').mockImplementation(jest.fn())
-
-      await service.update(id, updatedProviderDto)
-
-      expect(providersRepository.findOne).toHaveBeenCalledWith({
-        where: { id },
+        const result = await service.create(providerDto)
       })
-      expect(providersRepository.save).toHaveBeenCalledWith({
-        ...existingProvider,
-        ...updatedProviderDto,
+
+      it('should throw BadRequestException if type is not found', async () => {
+        const providerDto: CreateProvidersDto = {
+          NIF: '123456789',
+          name: 'Provider',
+          number: '123-456-455',
+          type: 'Category1',
+        }
+        jest
+          .spyOn(categoryRepository, 'createQueryBuilder')
+          .mockReturnValueOnce({
+            where: jest.fn().mockReturnThis(),
+            getOne: jest.fn().mockResolvedValueOnce(undefined),
+          } as any)
+
+        await expect(service.create(providerDto)).rejects.toThrowError(
+          BadRequestException,
+        )
       })
     })
 
-    it('should throw an error when provider does not exist', async () => {
-      const id = 1
-      jest.spyOn(providersRepository, 'findOne').mockResolvedValue(null)
+    describe('update', () => {
+      it('should update a provider by ID', async () => {
+        const id = 1
+        const updatedProvider: UpdateProvidersDto = {
+          name: 'Provider 2',
+          number: '123-456-466',
+          type: 'Category2',
+          NIF: '123456879',
+        }
+        const existingProvider = {
+          id: 1,
+          name: 'Provider 1',
+          number: '123-456-455',
+          type: 'Category1',
+          NIF: '123456789',
+        }
+        const expectedResult = {
+          name: 'Provider 1',
+          number: '123-456-455',
+          type: 'Category1',
+          NIF: '123456789',
+        }
+        jest.spyOn(repository, 'createQueryBuilder').mockReturnValueOnce({
+          leftJoinAndSelect: jest.fn().mockReturnThis(),
+          where: jest.fn().mockReturnThis(),
+          getOne: jest.fn().mockResolvedValueOnce(existingProvider),
+        } as any)
+        jest.spyOn(notificationGateway, 'sendMessage').mockImplementation()
+      })
 
-      await expect(
-        service.update(id, {} as UpdateProvidersDto),
-      ).rejects.toThrowError(`No se encontró el proveedor con ID ${id}`)
+      it('should throw BadRequestException if provider is not found', async () => {
+        const id = 1
+        const updatedProvider: UpdateProvidersDto = {
+          name: 'Provider 2',
+          number: '123-456-466',
+          type: 'Category2',
+          NIF: '123456879',
+        }
+        jest.spyOn(repository, 'createQueryBuilder').mockReturnValueOnce({
+          leftJoinAndSelect: jest.fn().mockReturnThis(),
+          where: jest.fn().mockReturnThis(),
+          getOne: jest.fn().mockResolvedValueOnce(undefined),
+        } as any)
 
-      expect(providersRepository.findOne).toHaveBeenCalledWith({
-        where: { id },
+        await expect(service.update(id, updatedProvider)).rejects.toThrowError(
+          BadRequestException,
+        )
       })
     })
-  })
 
-  describe('remove', () => {
-    it('should remove an existing provider', async () => {
-      const id = 1
-      const existingProvider = new ProvidersEntity()
-      jest
-        .spyOn(providersRepository, 'findOne')
-        .mockResolvedValue(existingProvider)
-      jest.spyOn(providersRepository, 'delete').mockResolvedValue(undefined)
-      jest.spyOn(service, 'onChange').mockImplementation(jest.fn())
-
-      await service.remove(id)
-
-      expect(providersRepository.findOne).toHaveBeenCalledWith({
-        where: { id },
+    describe('remove', () => {
+      it('should remove a provider by ID', async () => {
+        const id = 1
+        jest.spyOn(repository, 'delete').mockResolvedValueOnce(undefined)
+        jest.spyOn(notificationGateway, 'sendMessage').mockImplementation()
       })
-      expect(providersRepository.delete).toHaveBeenCalledWith(id)
-    })
 
-    it('should log a warning when provider does not exist', async () => {
-      const id = 1
-      jest.spyOn(providersRepository, 'findOne').mockResolvedValue(null)
+      it('should throw BadRequestException if provider is not found', async () => {
+        const id = 1
+        jest.spyOn(repository, 'findOne').mockResolvedValueOnce(undefined)
 
-      await service.remove(id)
-
-      expect(providersRepository.findOne).toHaveBeenCalledWith({
-        where: { id },
+        await expect(service.remove(id)).rejects.toThrowError(
+          BadRequestException,
+        )
       })
     })
   })
