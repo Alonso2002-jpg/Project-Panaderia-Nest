@@ -22,6 +22,9 @@ export class ProvidersResponseDto {
   @ApiProperty({ description: 'The name of the provider' })
   name: string;
 
+  @ApiProperty({ description: 'The type of the provider' })
+  type: string;
+
   @ApiProperty({ type: Date, description: 'The creation date of the provider' })
   CreationDate: Date;
 

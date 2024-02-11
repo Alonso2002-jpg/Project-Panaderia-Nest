@@ -1,5 +1,6 @@
 import { IsNotEmpty, IsString, Length, Matches } from 'class-validator'
 import { ApiProperty } from '@nestjs/swagger'
+import {Transform} from "class-transformer";
 /**
  * Dto para crear un proveedor
  * @property {string} NIF - NIF del proveedor
@@ -49,4 +50,13 @@ export class CreateProvidersDto {
     maxLength: 50,
   })
   name: string
+
+  @ApiProperty({
+    example: 'Wholesaler',
+    description: 'Provider type name',
+  })
+  @IsString()
+  @IsNotEmpty({ message: 'The type is required' })
+  @Transform((type) => type.value.trim())
+  type: string
 }

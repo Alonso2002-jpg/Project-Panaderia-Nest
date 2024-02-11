@@ -1,10 +1,13 @@
-import { IsString, Length, Matches } from 'class-validator';
+import {IsNotEmpty, IsOptional, IsString, Length, Matches} from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
+import {Transform} from "class-transformer";
+import {PartialType} from "@nestjs/mapped-types";
+import {CreateProvidersDto} from "./create-providers.dto";
 
 /**
  * Dto para actualizar un proveedor en la base de datos de Providers
  */
-export class UpdateProvidersDto {
+export class UpdateProvidersDto extends PartialType(CreateProvidersDto) {
   /**
    * El id de un proveedor
    */
@@ -38,4 +41,14 @@ export class UpdateProvidersDto {
     maxLength: 50,
   })
   name: string;
+
+  @ApiProperty({
+    example: 'Wholesaler',
+    description: 'Provider type name',
+  })
+  @IsString()
+  @IsNotEmpty({ message: 'The type is required' })
+  @Transform((type) => type.value.trim())
+  @IsOptional()
+  type: string
 }

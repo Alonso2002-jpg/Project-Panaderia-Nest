@@ -29,6 +29,8 @@ import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard'
 import { BodyValidatorPipe } from '../utils/pipes/body-validator.pipe'
 import { IntValidatorPipe } from '../utils/pipes/int-validator.pipe'
 import { CacheInterceptor, CacheKey, CacheTTL } from '@nestjs/cache-manager'
+import {CreateProvidersDto} from "./dto/create-providers.dto";
+import {ProvidersResponseDto} from "./dto/response-providers.dto";
 @UseGuards(JwtAuthGuard, RolesAuthGuard)
 @ApiTags('providers')
 @UseInterceptors(CacheInterceptor)
@@ -105,8 +107,8 @@ export class ProvidersController {
   @ApiBadRequestResponse({ description: 'Bad request' })
   @ApiInternalServerErrorResponse({ description: 'Internal server error' })
   async create(
-    @Body(new BodyValidatorPipe()) Providers: ProvidersEntity,
-  ): Promise<ProvidersEntity> {
+    @Body(new BodyValidatorPipe()) Providers: CreateProvidersDto,
+  ): Promise<ProvidersResponseDto> {
     this.logger.log('Creating a new provider')
     return await this.providersService.create(Providers)
   }
@@ -114,7 +116,7 @@ export class ProvidersController {
   /**
    * Metodo para actualizar un proveedor
    * @param {string} id ID del proveedor
-   * @param {ProvidersEntity} Providers entidad de Proveedor
+   * @param providers
    * @returns {Promise<ProvidersEntity>} entidad de Proveedor
    */
   @Roles('ADMIN')
@@ -130,10 +132,10 @@ export class ProvidersController {
   @ApiBadRequestResponse({ description: 'Bad request' })
   async update(
     @Param('id', new IntValidatorPipe()) id: number,
-    @Body(new BodyValidatorPipe()) Providers: UpdateProvidersDto,
-  ): Promise<ProvidersEntity> {
+    @Body(new BodyValidatorPipe()) providers: UpdateProvidersDto,
+  ): Promise<ProvidersResponseDto> {
     this.logger.log(`Updating provider with ID: ${id}`)
-    return await this.providersService.update(+id, Providers)
+    return await this.providersService.update(+id, providers)
   }
 
   /**

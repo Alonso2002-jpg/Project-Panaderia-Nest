@@ -24,6 +24,7 @@ export class ProvidersMapper {
     response.name = providers.name
     response.NIF = providers.NIF
     response.number = providers.number
+    response.type = providers.type != null ? providers.type.nameCategory : null
     response.CreationDate = providers.CreationDate
     response.UpdateDate = providers.UpdateDate
     return response
