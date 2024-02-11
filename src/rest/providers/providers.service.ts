@@ -243,10 +243,15 @@ export class ProvidersService {
       where: { id },
     })
 
-    if (providerToDelete) {
-      this.onChange(NotificationType.DELETE, providerToDelete)
-      await this.providersRepository.delete(id)
+    try {
+      if (providerToDelete) {
+        this.onChange(NotificationType.DELETE, providerToDelete)
+        await this.providersRepository.delete(id)
+      }
+    } catch (err) {
+      throw new BadRequestException(`Provider have products associated. Cannot be delete`)
     }
+
     // Si no encontramos el proveedor, podrías lanzar una excepción o manejar de otra manera.
     throw new BadRequestException(`No se encontró el proveedor con ID ${id}`)
   }
