@@ -31,8 +31,10 @@ describe('PersonalService', () => {
         get: jest.fn(() => Promise.resolve()),
         set: jest.fn(() => Promise.resolve()),
         del: jest.fn(() => Promise.resolve()),
-
-    };
+        store: {
+            keys: jest.fn(),
+        },
+    }
 
     beforeEach(async () => {
         const module: TestingModule = await Test.createTestingModule({
@@ -167,7 +169,6 @@ describe('PersonalService', () => {
             const mockCategory = new Category()
             const mockPersonal = new PersonalEntity()
             const mockResponsePersonalDto = new ResponsePersonalDto()
-
             jest
                 .spyOn(service, 'checkCategory')
                 .mockResolvedValue(mockCategory)
@@ -176,8 +177,12 @@ describe('PersonalService', () => {
                 .spyOn(personalRepository, 'save')
                 .mockResolvedValue(mockPersonal)
             jest
+                .spyOn(personalRepository, 'findOne')
+                .mockResolvedValue(undefined)
+            jest
                 .spyOn(personalMapper, 'toResponseDto')
                 .mockReturnValue(mockResponsePersonalDto)
+            jest.spyOn(cacheManager.store, 'keys').mockResolvedValue([])
 
             expect(await service.create(createPersonalDto)).toEqual(
                 mockResponsePersonalDto,
@@ -259,17 +264,36 @@ describe('PersonalService', () => {
     describe('exists', () => {
         const result = new PersonalEntity()
         it('should return true if personal exists', async () => {
-            const id = 1
+            const mockQueryBuilder = {
+                leftJoinAndSelect: jest.fn().mockReturnThis(),
+                orderBy: jest.fn().mockReturnThis(),
+                where: jest.fn().mockReturnThis(),
+                getOne: jest.fn().mockResolvedValue(new PersonalEntity()),
+            }
+            const id = 'b814e15c-c262-42f1-9168-6ce5f69defe9'
             jest
                 .spyOn(personalRepository, 'findOneBy')
                 .mockResolvedValue(new PersonalEntity())
+            jest.spyOn(cacheManager, 'get').mockResolvedValue(Promise.resolve(null))
+
+            jest
+                .spyOn(personalRepository, 'createQueryBuilder')
+                .mockReturnValue(mockQueryBuilder as any)
 
             expect(await service.exists('b814e15c-c262-42f1-9168-6ce5f69defe9')).toEqual(result)
         })
 
         it('should return false if personal does not exist', async () => {
             const id = 1
-            jest.spyOn(personalRepository, 'findOneBy').mockResolvedValue(undefined)
+            const mockQueryBuilder = {
+                leftJoinAndSelect: jest.fn().mockReturnThis(),
+                orderBy: jest.fn().mockReturnThis(),
+                where: jest.fn().mockReturnThis(),
+                getOne: jest.fn().mockResolvedValue(undefined),
+            }
+            jest
+                .spyOn(personalRepository, 'createQueryBuilder')
+                .mockReturnValue(mockQueryBuilder as any)
 
             await expect(service.exists('b814e15c-c262-42f1-9168-6ce5f69defe9')).rejects.toThrow(NotFoundException)
         })
