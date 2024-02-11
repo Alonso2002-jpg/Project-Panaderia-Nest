@@ -242,7 +242,12 @@ export class PersonalService {
         if (cachedPersonal) {
             return cachedPersonal
         }
-        const personal = await this.personalRepository.findOneBy({id})
+        const personal = await this.personalRepository
+            .createQueryBuilder('personal')
+            .leftJoinAndSelect('personal.section', 'section')
+            .where('personal.id = :id', {id})
+            .getOne()
+
         if (!personal) {
             throw new NotFoundException(`Staff member with id ${id} not found`)
         }
@@ -280,7 +285,7 @@ export class PersonalService {
 
         const PersonalRemoved = await this.personalRepository.save(personalToRemove)
         const dto = this.personalMapper.toResponseDto(PersonalRemoved)
-        await this.cacheManager.del(`_perosnal${id}`)
+        await this.cacheManager.del(`personal_${id}`)
 
         return dto
     }
