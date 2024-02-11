@@ -6,8 +6,7 @@ import {
     HttpCode,
     Logger,
     Param,
-    Patch,
-    Post,
+    Post, Put,
     UseGuards,
     UsePipes,
     ValidationPipe
@@ -59,8 +58,8 @@ export class PersonalController {
     @ApiBadRequestResponse({description: 'Invalid data'})
     @ApiBadRequestResponse({description: 'Invalid data category'})
     @UsePipes(new ValidationPipe({transform: true}))
-    create(@Body(new ValidationPipe()) createPersonalDto: CreatePersonalDto) {
-        return this.personalService.create(createPersonalDto);
+    async create(@Body(new ValidationPipe()) createPersonalDto: CreatePersonalDto) {
+        return await this.personalService.create(createPersonalDto);
     }
 
     /**
@@ -111,7 +110,7 @@ export class PersonalController {
     })
     @HttpCode(200)
     async findAll(@Paginate() query: PaginateQuery) {
-        return this.personalService.findAll(query);
+        return await this.personalService.findAll(query);
     }
 
     /**
@@ -139,9 +138,9 @@ export class PersonalController {
             'The product id is not valid',
     })
     @HttpCode(200)
-    findOne(@Param('id', new UuidValidatorPipe()) id: string) {
+    async findOne(@Param('id', new UuidValidatorPipe()) id: string) {
         this.logger.log(`Searching for staff with id: ${id}`);
-        return this.personalService.findOne(id);
+        return await this.personalService.findOne(id);
     }
 
     /**
@@ -150,7 +149,7 @@ export class PersonalController {
      * @param {UpdatePersonalDto} updatePersonalDto - DTO containing the data to update the personal record.
      * @returns The updated personal record.
      */
-    @Patch(':id')
+    @Put(':id')
     @Roles('ADMIN')
     @ApiResponse({
         status: 200,
@@ -178,12 +177,12 @@ export class PersonalController {
         description: 'The category does not exist or is not valid',
     })
     @UsePipes(new ValidationPipe({transform: true, whitelist: true}))
-    update(
+    async update(
         @Param('id', new UuidValidatorPipe()) id: string,
         @Body(new ValidationPipe()) updatePersonalDto: UpdatePersonalDto,
     ) {
         this.logger.log(`Updating staff with id: ${id}, Data: ${JSON.stringify(updatePersonalDto)}`);
-        return this.personalService.update(id, updatePersonalDto);
+        return await this.personalService.update(id, updatePersonalDto);
     }
 
     /**

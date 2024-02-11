@@ -98,7 +98,7 @@ export class PersonalService {
 
         const category = await this.categoryRepository
             .createQueryBuilder()
-            .where('LOWER(name) = LOWER(:name)', {
+            .where('LOWER(name_category) = LOWER(:name)', {
                 name: categoryName.toLowerCase(),
             })
             .getOne()
@@ -129,7 +129,7 @@ export class PersonalService {
 
         const queryBuilder = this.personalRepository
             .createQueryBuilder('personal')
-            .leftJoinAndSelect('personal.category', 'category')
+            .leftJoinAndSelect('personal.section', 'section')
 
         const pagination = await paginate(query, queryBuilder, {
             sortableColumns: ['id', 'name'],
@@ -213,6 +213,8 @@ export class PersonalService {
 
         if (updatePersonalDto.section) {
             category = await this.checkCategory(updatePersonalDto.section)
+        } else {
+            category = personalToUpdate.section
         }
 
         const personalUpdated = await this.personalRepository.save({
