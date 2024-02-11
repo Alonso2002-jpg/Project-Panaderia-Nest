@@ -186,7 +186,7 @@ export class PersonalService {
             .where('personal.id = :id', {id})
             .getOne()
 
-        if (!personalToFind) {
+        if (!personalToFind || personalToFind.isActive == false) {
             throw new NotFoundException(`Staff member with id ${id} not found`)
         }
 
@@ -248,7 +248,7 @@ export class PersonalService {
             .where('personal.id = :id', {id})
             .getOne()
 
-        if (!personal) {
+        if (!personal || personal.isActive == false) {
             throw new NotFoundException(`Staff member with id ${id} not found`)
         }
         await this.cacheManager.set(cacheKey, personal)
@@ -264,7 +264,7 @@ export class PersonalService {
         const personalToRemove = await this.exists(id)
         const personalRemoved =
             await this.personalRepository.remove(personalToRemove)
-        if (!personalRemoved) {
+        if (!personalRemoved || personalRemoved.isActive == false) {
             throw new NotFoundException(`Staff member with id ${id} not found`)
         }
         const dto = this.personalMapper.toResponseDto(personalRemoved)
@@ -281,7 +281,7 @@ export class PersonalService {
     async removeSoft(id: string): Promise<ResponsePersonalDto> {
         this.logger.log(`Remove soft  id:${id}`)
         const personalToRemove = await this.exists(id)
-        personalToRemove.isActive = true
+        personalToRemove.isActive = false
 
         const PersonalRemoved = await this.personalRepository.save(personalToRemove)
         const dto = this.personalMapper.toResponseDto(PersonalRemoved)
