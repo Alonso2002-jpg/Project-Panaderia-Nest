@@ -3,8 +3,9 @@ import { AppModule } from './app.module'
 import { ValidationPipe } from '@nestjs/common'
 import * as dotenv from 'dotenv'
 import * as process from 'process'
-import {readFileSync} from "fs";
-import path from "path";
+import { readFileSync } from 'fs'
+import * as path from 'path'
+
 
 dotenv.config() // Cargamos las variables de entorno
 async function bootstrap() {
