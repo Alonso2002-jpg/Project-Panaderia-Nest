@@ -14,7 +14,7 @@ export class RolesAuthGuard implements CanActivate {
   constructor(private reflector: Reflector) {}
 
   canActivate(context: ExecutionContext): boolean {
-    const roles = this.reflector.get<string[]>('rols', context.getHandler())
+    const roles = this.reflector.get<string[]>('roles', context.getHandler())
     this.logger.log(`Roles: ${roles}`)
     if (!roles) {
       return true
