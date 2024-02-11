@@ -8,7 +8,7 @@ import { ResponseCategoryDto } from '../dto/response-category.dto'
 export class CategoryMapper {
   mapCategory(createCategoriaDto: CreateCategoryDto): Category {
     const category = new Category()
-    category.nameCategory = createCategoriaDto.nameCategory
+    category.nameCategory = createCategoriaDto.nameCategory.toUpperCase()
     category.isDeleted = createCategoriaDto.isDeleted || false
     return category
   }

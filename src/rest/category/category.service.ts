@@ -41,7 +41,7 @@ export class CategoryService {
    */
   async create(createCategoryDto: CreateCategoryDto) {
     const findCategory = await this.categoryRepository.findOneBy({
-      nameCategory: createCategoryDto.nameCategory,
+      nameCategory: createCategoryDto.nameCategory.toUpperCase(),
     })
     if (findCategory) {
       throw new BadRequestException(
@@ -120,6 +120,7 @@ export class CategoryService {
   async remove(id: number) {
     const categoryToRemove = await this.findOne(id)
     await this.invalidateCacheKey(`category_${id}`)
+    await this.invalidateCacheKey('all_categories')
     this.onChange(NotificationType.DELETE, categoryToRemove)
 
     if (await this.findRelations(categoryToRemove)) {
