@@ -145,7 +145,7 @@ export class UsersService {
       }
       const roles = updateUserDto.rols || [Role.USER]
       const userRoles = roles.map((role) => ({
-        usuario: user,
+        user: user,
         role: Role[role],
       }))
       user.rols = await this.userRoleRepository.save(userRoles)
