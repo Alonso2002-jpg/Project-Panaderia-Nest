@@ -6,7 +6,8 @@ import {
     HttpCode,
     Logger,
     Param,
-    Post, Put,
+    Post,
+    Put,
     UseGuards,
     UsePipes,
     ValidationPipe
@@ -208,12 +209,6 @@ export class PersonalController {
     })
     @HttpCode(204)
     async remove(@Param('id', new UuidValidatorPipe()) id: string) {
-        try {
-            await this.personalService.removeSoft(id);
-            this.logger.log(`Deleted staff with id: ${id}`);
-        } catch (error) {
-            this.logger.error(`Staff with id: ${id} does not exist`, error.stack);
-            throw error;
-        }
+        await this.personalService.removeSoft(id);
     }
 }
