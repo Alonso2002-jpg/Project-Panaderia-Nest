@@ -67,7 +67,7 @@ export class UsersService {
     usuario.password = hashPassword
     const user = await this.usersRepository.save(usuario)
     const roles = createUserDto.rols || [Role.USER]
-    const userRoles = roles.map((role) => ({ usuario: user, role: Role[role] }))
+    const userRoles = roles.map((role) => ({ user: user, role: Role[role] }))
     const savedUserRoles = await this.userRoleRepository.save(userRoles)
 
     return this.usersService.toResponseDtoWithRoles(user, savedUserRoles)
@@ -145,7 +145,7 @@ export class UsersService {
       }
       const roles = updateUserDto.rols || [Role.USER]
       const userRoles = roles.map((role) => ({
-        usuario: user,
+        user: user,
         role: Role[role],
       }))
       user.rols = await this.userRoleRepository.save(userRoles)

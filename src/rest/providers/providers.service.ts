@@ -27,6 +27,7 @@ import { NotificationGateway } from '../../websockets/notification/notification.
 import { ProvidersResponseDto } from './dto/response-providers.dto'
 import { CACHE_MANAGER } from '@nestjs/cache-manager'
 import { CreateProvidersDto } from './dto/create-providers.dto'
+import {Category} from "../category/entities/category.entity";
 
 /**
  * Servicio de Providers a cargo de manejar las solicitudes de los proveedores
@@ -52,6 +53,8 @@ export class ProvidersService {
      */
     @InjectRepository(ProvidersEntity)
     private readonly providersRepository: Repository<ProvidersEntity>,
+    @InjectRepository(Category)
+    private readonly categoryRepository: Repository<Category>,
   ) {}
   /**
    *  Instancia de Logger
@@ -128,13 +131,17 @@ export class ProvidersService {
   @ApiResponse({ status: 404, description: 'Provider not found' })
   async findOne(id: number) {
     this.logger.log(`Searching Providers by ID: ${id}`)
-    const providerFind = await this.providersRepository.findOne({
-      where: { id },
-    })
+    const providerFind = await this.providersRepository
+        .createQueryBuilder('provider')
+        .leftJoinAndSelect('provider.type', 'type')
+        .where('provider.id = :id', {id})
+        .getOne()
+
     if (!providerFind) {
       throw new NotFoundException(`Provider not found with ID ${id}`)
     }
-    return providerFind
+
+    return this.providersMapper.mapResponse(providerFind)
   }
   /**
    * Crea un nuevo proveedor
@@ -148,10 +155,28 @@ export class ProvidersService {
   @ApiResponse({ status: 201, description: 'Created', type: ProvidersEntity })
   async create(provider: CreateProvidersDto) {
     this.logger.log('Creating a new Providers.')
+    const type = await this.findType(provider.type)
     const newProviders = this.providersMapper.toEntity(provider)
-    const savedProviders = await this.providersRepository.save(newProviders)
+    const savedProviders = await this.providersRepository.save({
+      ...newProviders,
+      type: type,
+    })
     this.onChange(NotificationType.CREATE, savedProviders)
-    return savedProviders
+    return this.providersMapper.mapResponse(savedProviders)
+  }
+
+  private async findType(type: string): Promise<Category> {
+    const typeFound = await this.categoryRepository
+        .createQueryBuilder()
+        .where('LOWER(name_category) = LOWER(:type)', {
+          type : type.toLowerCase(),
+        })
+        .getOne()
+    if (!typeFound || typeFound.isDeleted) {
+      this.logger.log(`Type ${type} doesn't exist`)
+      throw new BadRequestException(`Type ${type} doesn't exist`)
+    }
+    return typeFound
   }
 
   /**
@@ -171,19 +196,29 @@ export class ProvidersService {
   async update(
     id: number,
     updatedProvider: UpdateProvidersDto,
-  ): Promise<ProvidersEntity> {
+  ): Promise<ProvidersResponseDto> {
     this.logger.log(`Updating Provider with ID: ${id}`)
-    const existingProvider = await this.providersRepository.findOne({
-      where: { id },
-    })
+    const existingProvider = await this.providersRepository
+        .createQueryBuilder('provider')
+        .leftJoinAndSelect('provider.type', 'type')
+        .where('provider.id = :id', {id})
+        .getOne()
     if (existingProvider) {
       // Si encontramos el proveedor, actualizamos sus propiedades
+      let type : Category;
+      if(updatedProvider.type){
+        type = await this.findType(updatedProvider.type)
+      } else {
+        type = existingProvider.type;
+      }
       const updatedEntity = await this.providersRepository.save({
         ...existingProvider,
         ...updatedProvider,
+        type : type
       })
+      const res = this.providersMapper.mapResponse(updatedEntity)
       this.onChange(NotificationType.UPDATE, updatedEntity)
-      return updatedEntity
+      return res
     }
     // Si no encontramos el proveedor, podrías lanzar una excepción o manejar de otra manera.
     throw new BadRequestException(`No se encontró el proveedor con ID ${id}`)
@@ -208,10 +243,15 @@ export class ProvidersService {
       where: { id },
     })
 
-    if (providerToDelete) {
-      this.onChange(NotificationType.DELETE, providerToDelete)
-      await this.providersRepository.delete(id)
+    try {
+      if (providerToDelete) {
+        this.onChange(NotificationType.DELETE, providerToDelete)
+        await this.providersRepository.delete(id)
+      }
+    } catch (err) {
+      throw new BadRequestException(`Provider have products associated. Cannot be delete`)
     }
+
     // Si no encontramos el proveedor, podrías lanzar una excepción o manejar de otra manera.
     throw new BadRequestException(`No se encontró el proveedor con ID ${id}`)
   }

@@ -98,7 +98,7 @@ export class PersonalService {
 
         const category = await this.categoryRepository
             .createQueryBuilder()
-            .where('LOWER(name) = LOWER(:name)', {
+            .where('LOWER(name_category) = LOWER(:name)', {
                 name: categoryName.toLowerCase(),
             })
             .getOne()
@@ -129,7 +129,7 @@ export class PersonalService {
 
         const queryBuilder = this.personalRepository
             .createQueryBuilder('personal')
-            .leftJoinAndSelect('personal.category', 'category')
+            .leftJoinAndSelect('personal.section', 'section')
 
         const pagination = await paginate(query, queryBuilder, {
             sortableColumns: ['id', 'name'],
@@ -186,7 +186,7 @@ export class PersonalService {
             .where('personal.id = :id', {id})
             .getOne()
 
-        if (!personalToFind) {
+        if (!personalToFind || personalToFind.isActive == false) {
             throw new NotFoundException(`Staff member with id ${id} not found`)
         }
 
@@ -213,6 +213,8 @@ export class PersonalService {
 
         if (updatePersonalDto.section) {
             category = await this.checkCategory(updatePersonalDto.section)
+        } else {
+            category = personalToUpdate.section
         }
 
         const personalUpdated = await this.personalRepository.save({
@@ -240,8 +242,13 @@ export class PersonalService {
         if (cachedPersonal) {
             return cachedPersonal
         }
-        const personal = await this.personalRepository.findOneBy({id})
-        if (!personal) {
+        const personal = await this.personalRepository
+            .createQueryBuilder('personal')
+            .leftJoinAndSelect('personal.section', 'section')
+            .where('personal.id = :id', {id})
+            .getOne()
+
+        if (!personal || personal.isActive == false) {
             throw new NotFoundException(`Staff member with id ${id} not found`)
         }
         await this.cacheManager.set(cacheKey, personal)
@@ -257,7 +264,7 @@ export class PersonalService {
         const personalToRemove = await this.exists(id)
         const personalRemoved =
             await this.personalRepository.remove(personalToRemove)
-        if (!personalRemoved) {
+        if (!personalRemoved || personalRemoved.isActive == false) {
             throw new NotFoundException(`Staff member with id ${id} not found`)
         }
         const dto = this.personalMapper.toResponseDto(personalRemoved)
@@ -274,11 +281,11 @@ export class PersonalService {
     async removeSoft(id: string): Promise<ResponsePersonalDto> {
         this.logger.log(`Remove soft  id:${id}`)
         const personalToRemove = await this.exists(id)
-        personalToRemove.isActive = true
+        personalToRemove.isActive = false
 
         const PersonalRemoved = await this.personalRepository.save(personalToRemove)
         const dto = this.personalMapper.toResponseDto(PersonalRemoved)
-        await this.cacheManager.del(`_perosnal${id}`)
+        await this.cacheManager.del(`personal_${id}`)
 
         return dto
     }

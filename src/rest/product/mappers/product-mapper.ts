@@ -4,7 +4,7 @@ import { CreateProductDto } from '../dto/create-product.dto'
 import { Category } from '../../category/entities/category.entity'
 import { UpdateProductDto } from '../dto/update-product.dto'
 import { ResponseProductDto } from '../dto/response-product.dto'
-import { ProvidersEntity } from '../../Providers/entities/Providers.entity'
+import { ProvidersEntity } from '../../providers/entities/providers.entity'
 import * as process from 'process'
 
 @Injectable()

@@ -3,17 +3,15 @@ import {
   Get,
   Post,
   Body,
-  Patch,
   Param,
   Delete,
   HttpCode,
-  UseGuards,
+  UseGuards, Put,
 } from '@nestjs/common'
 import { CategoryService } from './category.service'
 import { CreateCategoryDto } from './dto/create-category.dto'
 import { UpdateCategoryDto } from './dto/update-category.dto'
 import { CategoryMapper } from './mapper/category-mapper.service'
-import { RolsExistsGuard } from '../user/guards/rols.exists.guard'
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard'
 import {
   ApiBadRequestResponse,
@@ -102,7 +100,7 @@ export class CategoryController {
     )
   }
 
-  @Patch(':id')
+  @Put(':id')
   @ApiBearerAuth()
   @ApiResponse({
     status: 200,
