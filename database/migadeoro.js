@@ -11,9 +11,9 @@ db.createUser({
 
 db = db.getSiblingDB('migadeoro')
 
-db.createCollection('orders')
+db.createCollection('order')
 
-db.orders.insertMany([
+db.order.insertMany([
   {
     _id: ObjectId('6536518de9b0d305f193b5ef'),
     idUser: 1,
