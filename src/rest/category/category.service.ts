@@ -21,7 +21,7 @@ import { ResponseCategoryDto } from './dto/response-category.dto'
 import { NotificationGateway } from '../../websockets/notification/notification.gateway'
 
 /**
- * Servicio para operaciones relacionadas con las categorías.
+ * Service for operations related to categories.
  */
 @Injectable()
 export class CategoryService {
@@ -34,10 +34,10 @@ export class CategoryService {
     private readonly categoryMapper: CategoryMapper,
   ) {}
   /**
-   * Crea una nueva categoría.
-   * @param createCategoryDto Los datos de la categoría a crear.
-   * @returns La categoría creada.
-   * @throws BadRequestException Si la categoría ya existe.
+   * Creates a new category.
+   * @param createCategoryDto The data of the category to create.
+   * @returns The created category.
+   * @throws BadRequestException If the category already exists.
    */
   async create(createCategoryDto: CreateCategoryDto) {
     const findCategory = await this.categoryRepository.findOneBy({
@@ -57,8 +57,8 @@ export class CategoryService {
   }
 
   /**
-   * Obtiene todas las categorías.
-   * @returns Un arreglo con todas las categorías.
+   * Gets all categories.
+   * @returns An array with all categories.
    */
   async findAll() {
     this.logger.log('Find All Categories')
@@ -72,10 +72,10 @@ export class CategoryService {
     return categories
   }
   /**
-   * Obtiene una categoría por su ID.
-   * @param id El ID de la categoría a buscar.
-   * @returns La categoría encontrada.
-   * @throws NotFoundException Si la categoría no se encuentra.
+   * Gets a category by its ID.
+   * @param id The ID of the category to search for.
+   * @returns The found category.
+   * @throws NotFoundException If the category is not found.
    */
   async findOne(id: number) {
     this.logger.log(`Find Category with ID: ${id}`)
@@ -95,11 +95,11 @@ export class CategoryService {
     return categoryFind
   }
   /**
-   * Actualiza una categoría existente.
-   * @param id El ID de la categoría a actualizar.
-   * @param updateCategoryDto Los datos actualizados de la categoría.
-   * @returns La categoría actualizada.
-   * @throws NotFoundException Si la categoría no se encuentra.
+   * Updates an existing category.
+   * @param id The ID of the category to update.
+   * @param updateCategoryDto The updated data of the category.
+   * @returns The updated category.
+   * @throws NotFoundException If the category is not found.
    */
   async update(id: number, updateCategoryDto: UpdateCategoryDto) {
     const categoryFind = await this.findOne(id)
@@ -112,15 +112,15 @@ export class CategoryService {
     return categoryUpdated
   }
   /**
-   * Elimina una categoría.
-   * @param id El ID de la categoría a eliminar.
-   * @returns La categoría eliminada.
-   * @throws NotFoundException Si la categoría no se encuentra.
+   * Deletes a category.
+   * @param id The ID of the category to delete.
+   * @returns The deleted category.
+   * @throws NotFoundException If the category is not found.
    */
   async remove(id: number) {
     const categoryToRemove = await this.findOne(id)
-    await this.invalidateCacheKey(`category_${id}`)
     await this.invalidateCacheKey('all_categories')
+    await this.invalidateCacheKey(`category_${id}`)
     this.onChange(NotificationType.DELETE, categoryToRemove)
 
     if (await this.findRelations(categoryToRemove)) {
@@ -129,25 +129,25 @@ export class CategoryService {
     return await this.softRemove(categoryToRemove)
   }
   /**
-   * Elimina permanentemente una categoría.
-   * @param cateToRemove La categoría a eliminar permanentemente.
-   * @returns La categoría eliminada permanentemente.
+   * Permanently deletes a category.
+   * @param cateToRemove The category to be permanently deleted.
+   * @returns The category permanently deleted.
    */
   async hardRemove(cateToRemove: Category) {
     return await this.categoryRepository.remove(cateToRemove)
   }
   /**
-   * Marca una categoría como eliminada.
-   * @param cateToRemove La categoría a marcar como eliminada.
-   * @returns La categoría marcada como eliminada.
+   * Marks a category as deleted.
+   * @param cateToRemove The category to mark as deleted.
+   * @returns The category marked as deleted.
    */
   async softRemove(cateToRemove: Category) {
     cateToRemove.isDeleted = true
     return await this.categoryRepository.save(cateToRemove)
   }
   /**
-   * Invalida una clave en la caché.
-   * @param keyPattern El patrón de la clave a invalidar.
+   * Invalidates a key in the cache.
+   * @param keyPattern The pattern of the key to invalidate.
    */
   async invalidateCacheKey(keyPattern: string): Promise<void> {
     const cacheKeys = await this.cacheManager.store.keys()
@@ -156,9 +156,9 @@ export class CategoryService {
     await Promise.all(promises)
   }
   /**
-   * Verifica si una categoría tiene relaciones.
-   * @param category La categoría a verificar.
-   * @returns `true` si la categoría no tiene relaciones, `false` de lo contrario.
+   * Checks if a category has relations.
+   * @param category The category to check.
+   * @returns `true` if the category has no relations, `false` otherwise.
    */
   async findRelations(category: Category) {
     const categoryInstance = await this.categoryRepository.findOne({
@@ -172,9 +172,9 @@ export class CategoryService {
     )
   }
   /**
-   * Notifica un cambio relacionado con una categoría.
-   * @param type El tipo de notificación.
-   * @param data Los datos de la categoría relacionada con el cambio.
+   * Notifies a change related to a category.
+   * @param type The type of notification.
+   * @param data The data of the category related to the change.
    */
   onChange(type: NotificationType, data: Category) {
     const dataToSend = this.categoryMapper.mapResponse(data)
