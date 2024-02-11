@@ -18,6 +18,12 @@ import { UsersMapper } from '../user/mapper/users.mapper'
 import { BcryptService } from '../utils/bcrypt/bcrypt.services'
 import { Product } from '../product/entities/product.entity'
 import { OrderMapper } from '../orders/mappers/orders.mapper'
+import { PersonalService } from '../personal/personal.service'
+import { PersonalEntity } from '../personal/entities/personal.entity'
+import { Category } from '../category/entities/category.entity'
+import { MapperPersonal } from '../personal/mapper/mapperPersonal'
+import { CacheModule } from '@nestjs/cache-manager'
+
 import * as process from 'process'
 @Module({
   imports: [
@@ -44,7 +50,14 @@ import * as process from 'process'
         },
       },
     ]),
-    TypeOrmModule.forFeature([User, UserRole, Product]),
+    TypeOrmModule.forFeature([
+      User,
+      UserRole,
+      Product,
+      PersonalEntity,
+      Category,
+    ]),
+    CacheModule.register(),
   ],
   controllers: [AuthController],
   providers: [
@@ -56,6 +69,8 @@ import * as process from 'process'
     OrderMapper,
     UsersMapper,
     BcryptService,
+    PersonalService,
+    MapperPersonal,
   ],
 })
 export class AuthModule {}

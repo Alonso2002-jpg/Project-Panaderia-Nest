@@ -17,6 +17,8 @@ import { OrdersService } from '../orders/orders.service'
 import { BcryptService } from '../utils/bcrypt/bcrypt.services'
 import { CreateOrderDto } from '../orders/dto/create-order.dto'
 import { UpdateOrderDto } from '../orders/dto/update-order.dto'
+import { PersonalService } from '../personal/personal.service'
+import { PersonalEntity } from '../personal/entities/personal.entity'
 
 @Injectable()
 export class UsersService {
@@ -27,6 +29,7 @@ export class UsersService {
     private readonly usersRepository: Repository<User>,
     @InjectRepository(UserRole)
     private readonly userRoleRepository: Repository<UserRole>,
+    private readonly personalService: PersonalService,
     private readonly ordersService: OrdersService,
     private readonly usersService: UsersMapper,
     private readonly bcryptService: BcryptService,
@@ -119,34 +122,27 @@ export class UsersService {
       throw new NotFoundException(`User not found with id ${id}`)
     }
 
-    if (updateUserDto.username) {
-      const existingUser = await this.findByUsername(updateUserDto.username)
-      if (existingUser && existingUser.id !== id) {
-        throw new BadRequestException('username already exists')
-      }
-    }
-    if (updateUserDto.email) {
-      const existingUser = await this.findByEmail(updateUserDto.email)
-      if (existingUser && existingUser.id !== id) {
-        throw new BadRequestException('email already exists')
-      }
-    }
-    if (updateUserDto.password) {
-      updateUserDto.password = await this.bcryptService.hash(
-        updateUserDto.password,
-      )
-    }
+    await this.validateUser(updateUserDto, id)
+
     const rolesBackup = [...user.rols]
     Object.assign(user, updateUserDto)
+
+    const personalAssigned = await this.personalService.findByUserId(id)
+    if (!personalAssigned) {
+      throw new BadRequestException('User does not have a personal assigned')
+    }
 
     if (updateRoles) {
       for (const userRole of rolesBackup) {
         await this.userRoleRepository.remove(userRole)
       }
       const roles = updateUserDto.rols || [Role.USER]
+      if (roles.includes('SELLER' || 'seller')) {
+        this.validateSeller(personalAssigned)
+      }
       const userRoles = roles.map((role) => ({
         user: user,
-        role: Role[role],
+        role: Role[role.toUpperCase()],
       }))
       user.rols = await this.userRoleRepository.save(userRoles)
     } else {
@@ -220,5 +216,31 @@ export class UsersService {
   private async findByEmail(email: string) {
     this.logger.log(`findByEmail: ${email}`)
     return await this.usersRepository.findOneBy({ email })
+  }
+
+  private validateSeller(personal: PersonalEntity) {
+    if (!personal.section.nameCategory.includes('CASHIER' || 'cashier')) {
+      throw new BadRequestException('Personal must be a Cashier')
+    }
+  }
+
+  private async validateUser(updateUserDto: UpdateUserDto, id: number) {
+    if (updateUserDto.username) {
+      const existingUser = await this.findByUsername(updateUserDto.username)
+      if (existingUser && existingUser.id !== id) {
+        throw new BadRequestException('username already exists')
+      }
+    }
+    if (updateUserDto.email) {
+      const existingUser = await this.findByEmail(updateUserDto.email)
+      if (existingUser && existingUser.id !== id) {
+        throw new BadRequestException('email already exists')
+      }
+    }
+    if (updateUserDto.password) {
+      updateUserDto.password = await this.bcryptService.hash(
+        updateUserDto.password,
+      )
+    }
   }
 }
