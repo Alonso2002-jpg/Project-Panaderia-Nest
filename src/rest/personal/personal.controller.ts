@@ -31,13 +31,12 @@ import {ResponsePersonalDto} from "./dto/response-personal.dto";
 import {UuidValidatorPipe} from "../utils/pipes/uuid-validator.pipe";
 import {Roles, RolesAuthGuard} from "../auth/guards/rols-auth.guard";
 import {JwtAuthGuard} from "../auth/guards/jwt-auth.guard";
-import {RolsExistsGuard} from "../user/guards/rols.exists.guard";
 
 /**
  * Controller that handles HTTP requests for the 'personal' resource.
  */
 @Controller('personal')
-@UseGuards(JwtAuthGuard, RolsExistsGuard)
+@UseGuards(JwtAuthGuard, RolesAuthGuard)
 @ApiTags('personal')
 export class PersonalController {
     private readonly logger = new Logger(PersonalController.name);
@@ -52,7 +51,6 @@ export class PersonalController {
      */
 
     @Post()
-    @UseGuards(JwtAuthGuard, RolesAuthGuard)
     @Roles('ADMIN')
     @ApiBearerAuth()
     @HttpCode(201)
@@ -71,7 +69,6 @@ export class PersonalController {
      * @returns A list of personal records.
      */
     @Get()
-    @UseGuards(JwtAuthGuard, RolesAuthGuard)
     @Roles('ADMIN')
     @CacheKey('all_personal')
     @ApiResponse({
@@ -123,7 +120,6 @@ export class PersonalController {
      * @returns The personal record with the given UUID.
      */
     @Get(':id')
-    @UseGuards(JwtAuthGuard, RolesAuthGuard)
     @Roles('ADMIN')
     @ApiResponse({
         status: 200,
@@ -155,7 +151,6 @@ export class PersonalController {
      * @returns The updated personal record.
      */
     @Patch(':id')
-    @UseGuards(JwtAuthGuard, RolesAuthGuard)
     @Roles('ADMIN')
     @ApiResponse({
         status: 200,
@@ -179,7 +174,6 @@ export class PersonalController {
         description:
             'Some of the fields are not valid according to the DTO specification',
     })
-
     @ApiBadRequestResponse({
         description: 'The category does not exist or is not valid',
     })
@@ -197,7 +191,6 @@ export class PersonalController {
      * @param {string} id - The UUID of the personal record to remove.
      */
     @Delete(':id')
-    @UseGuards(JwtAuthGuard, RolesAuthGuard)
     @Roles('ADMIN')
     @ApiResponse({
         status: 204,
