@@ -21,14 +21,14 @@ import { ObjectId } from 'mongodb'
 import { RolsExistsGuard } from './guards/rols.exists.guard'
 import { UsersService } from './user.service'
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard'
-import { Roles } from '../auth/guards/rols-auth.guard'
+import {Roles, RolesAuthGuard} from '../auth/guards/rols-auth.guard'
 import { IdValidatePipe } from '../orders/pipes/id-validate.pipe'
 import { CreateOrderDto } from '../orders/dto/create-order.dto'
 import { UpdateOrderDto } from '../orders/dto/update-order.dto'
 
 @Controller('users')
 @UseInterceptors(CacheInterceptor) // Aplicar el interceptor aquí de cache
-@UseGuards(JwtAuthGuard, RolsExistsGuard) // Aplicar el guard aquí para autenticados con JWT y Roles (lo aplico a nivel de controlador)
+@UseGuards(JwtAuthGuard, RolesAuthGuard) // Aplicar el guard aquí para autenticados con JWT y Roles (lo aplico a nivel de controlador)
 @ApiExcludeController()
 export class UsersController {
   private readonly logger = new Logger(UsersController.name)

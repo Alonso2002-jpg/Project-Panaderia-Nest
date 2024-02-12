@@ -7,7 +7,7 @@ import { ProvidersEntity } from './entities/providers.entity'
 import { NotificationModule } from '../../websockets/notification/notification.module'
 import { StorageModule } from '../storage/storage.module'
 import { ProvidersMapper } from './mapper/providersMapper'
-import {Category} from "../category/entities/category.entity";
+import { Category } from '../category/entities/category.entity'
 /**
  * El decorador @Module del paquete @nestjs/common se utiliza para definir un módulo en el framework NestJS.
  * Las propiedades controllers y providers contienen una matriz de los controladores y proveedores que forman parte de este módulo.

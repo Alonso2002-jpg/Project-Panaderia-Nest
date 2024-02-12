@@ -6,7 +6,8 @@ import {
     HttpCode,
     Logger,
     Param,
-    Post, Put,
+    Post,
+    Put,
     UseGuards,
     UsePipes,
     ValidationPipe
@@ -30,6 +31,7 @@ import {ResponsePersonalDto} from "./dto/response-personal.dto";
 import {UuidValidatorPipe} from "../utils/pipes/uuid-validator.pipe";
 import {Roles, RolesAuthGuard} from "../auth/guards/rols-auth.guard";
 import {JwtAuthGuard} from "../auth/guards/jwt-auth.guard";
+import {BodyValidatorPipe} from "../utils/pipes/body-validator.pipe";
 
 /**
  * Controller that handles HTTP requests for the 'personal' resource.
@@ -58,7 +60,7 @@ export class PersonalController {
     @ApiBadRequestResponse({description: 'Invalid data'})
     @ApiBadRequestResponse({description: 'Invalid data category'})
     @UsePipes(new ValidationPipe({transform: true}))
-    async create(@Body(new ValidationPipe()) createPersonalDto: CreatePersonalDto) {
+    async create(@Body(new BodyValidatorPipe()) createPersonalDto: CreatePersonalDto) {
         return await this.personalService.create(createPersonalDto);
     }
 
@@ -179,7 +181,7 @@ export class PersonalController {
     @UsePipes(new ValidationPipe({transform: true, whitelist: true}))
     async update(
         @Param('id', new UuidValidatorPipe()) id: string,
-        @Body(new ValidationPipe()) updatePersonalDto: UpdatePersonalDto,
+        @Body(new BodyValidatorPipe()) updatePersonalDto: UpdatePersonalDto,
     ) {
         this.logger.log(`Updating staff with id: ${id}, Data: ${JSON.stringify(updatePersonalDto)}`);
         return await this.personalService.update(id, updatePersonalDto);
@@ -208,12 +210,6 @@ export class PersonalController {
     })
     @HttpCode(204)
     async remove(@Param('id', new UuidValidatorPipe()) id: string) {
-        try {
-            await this.personalService.removeSoft(id);
-            this.logger.log(`Deleted staff with id: ${id}`);
-        } catch (error) {
-            this.logger.error(`Staff with id: ${id} does not exist`, error.stack);
-            throw error;
-        }
+        await this.personalService.removeSoft(id);
     }
 }
