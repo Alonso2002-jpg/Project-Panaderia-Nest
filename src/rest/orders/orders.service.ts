@@ -41,7 +41,6 @@ export class OrdersService {
    */
   async create(createOrderDto: CreateOrderDto) {
     this.logger.log(`Creating order: ${JSON.stringify(createOrderDto)}`)
-    console.log(`Saving order: ${JSON.stringify(createOrderDto)}`)
     const orderToBeSaved = this.orderMapper.toEntity(createOrderDto)
     await this.checkOrder(orderToBeSaved)
     const orderToSave = await this.reserveStockOrder(orderToBeSaved)

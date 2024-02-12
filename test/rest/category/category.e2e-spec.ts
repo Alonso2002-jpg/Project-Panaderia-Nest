@@ -74,6 +74,7 @@ describe('CategoryController (e2e)', () => {
       .useValue({ canActivate: () => true })
       .compile()
 
+
     app = moduleFixture.createNestApplication()
     await app.init()
   })
