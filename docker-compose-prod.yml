@@ -14,9 +14,9 @@ services:
     ports:
       - ${POSTGRES_PORT}:5432
     volumes:
-      - ./database/funkos.sql:/docker-entrypoint-initdb.d/funkos.sql
+      - ./database/init.sql:/docker-entrypoint-initdb.d/init.sql
     networks:
-      - funkos-network
+      - migadeoro-network
 
   # MongoDB
   mongo-db:
@@ -31,7 +31,7 @@ services:
     ports:
       - ${MONGO_PORT}:27017
     volumes:
-      - ./database/funkos.js:/docker-entrypoint-initdb.d/funkos.js:ro
+      - ./database/migadeoro.js:/docker-entrypoint-initdb.d/migadeoro.js:ro
     networks:
       - migadeoro-network
 
