@@ -40,9 +40,9 @@ export class CategoryService {
    * @throws BadRequestException If the category already exists.
    */
   async create(createCategoryDto: CreateCategoryDto) {
-    const findCategory = await this.categoryRepository.findOneBy({
-      nameCategory: createCategoryDto.nameCategory.toUpperCase(),
-    })
+    const findCategory = await this.findCategoryByName(
+      createCategoryDto.nameCategory,
+    )
     if (findCategory) {
       throw new BadRequestException(
         `Category already exists with name: ${createCategoryDto.nameCategory}`,
@@ -127,6 +127,11 @@ export class CategoryService {
       return await this.hardRemove(categoryToRemove)
     }
     return await this.softRemove(categoryToRemove)
+  }
+  async findCategoryByName(nameCategory: string) {
+    return await this.categoryRepository.findOneBy({
+      nameCategory: nameCategory.toUpperCase(),
+    })
   }
   /**
    * Permanently deletes a category.

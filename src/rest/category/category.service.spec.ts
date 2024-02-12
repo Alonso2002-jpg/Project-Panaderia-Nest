@@ -107,6 +107,18 @@ describe('CategoryService', () => {
       expect(cacheManager.set).toHaveBeenCalled()
     })
 
+    it('should return a category found by name', async () => {
+      const category: Category = new Category()
+      const findSpy = jest
+        .spyOn(repository, 'findOneBy')
+        .mockResolvedValue(category)
+
+      const result = await service.findCategoryByName('test')
+
+      expect(findSpy).toHaveBeenCalledWith({ nameCategory: 'TEST' })
+      expect(result).toEqual(category)
+    })
+
     it('should return a category from cache', async () => {
       const category = new Category()
       jest
@@ -129,7 +141,7 @@ describe('CategoryService', () => {
   describe('create', () => {
     it('should create a category', async () => {
       const category = new Category()
-      jest.spyOn(repository, 'findOneBy').mockResolvedValue(null)
+      jest.spyOn(service, 'findCategoryByName').mockResolvedValue(null)
       jest.spyOn(cacheManager.store, 'keys').mockResolvedValue([])
       jest.spyOn(mapper, 'mapCategory').mockReturnValue(category)
       jest.spyOn(repository, 'save').mockResolvedValue(category)
@@ -144,7 +156,7 @@ describe('CategoryService', () => {
 
     it('should throw a BadRequestException when category already exists', async () => {
       const category = new Category()
-      jest.spyOn(repository, 'findOneBy').mockResolvedValue(category)
+      jest.spyOn(service, 'findCategoryByName').mockResolvedValue(category)
       await expect(service.create(new CreateCategoryDto())).rejects.toThrow(
         BadRequestException,
       )

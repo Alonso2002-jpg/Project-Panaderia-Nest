@@ -22,7 +22,7 @@ import { ApiExcludeController } from '@nestjs/swagger'
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard'
 import { Roles, RolesAuthGuard } from '../auth/guards/rols-auth.guard'
 import { UserExistsGuard } from './guards/user-exists.guard'
-import {OrderByValidatePipe} from "./pipes/orderBy-validate.pipe";
+import { OrderByValidatePipe } from './pipes/orderBy-validate.pipe'
 
 @Controller('orders')
 @UseGuards(JwtAuthGuard, RolesAuthGuard)

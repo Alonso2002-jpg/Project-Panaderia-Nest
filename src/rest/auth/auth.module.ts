@@ -3,7 +3,7 @@ import { AuthService } from './auth.service'
 import { AuthController } from './auth.controller'
 import { JwtModule } from '@nestjs/jwt'
 import { PassportModule } from '@nestjs/passport'
-import { JwtAuthStrategy } from './strategies/jwt-strategy'
+import { JwtAuthStrategy } from '../utils/strategies/jwt-strategy'
 import { AuthMapper } from './mapper/auth.mapper'
 import { UserModule } from '../user/user.module'
 import { UsersService } from '../user/user.service'
@@ -29,8 +29,7 @@ import * as process from 'process'
   imports: [
     JwtModule.register({
       secret: Buffer.from(
-        process.env.JWT_SECRET ||
-          'La_Mejor_Panaderia_Del_Mundo_XD',
+        process.env.JWT_SECRET || 'La_Mejor_Panaderia_Del_Mundo_XD',
         'utf-8',
       ).toString('base64'),
       signOptions: {
