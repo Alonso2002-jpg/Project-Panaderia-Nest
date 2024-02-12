@@ -18,10 +18,9 @@ import { CreateUserDto } from './dto/create-user.dto'
 import { UpdateUserDto } from './dto/update-user.dto'
 import { ApiExcludeController } from '@nestjs/swagger'
 import { ObjectId } from 'mongodb'
-import { RolsExistsGuard } from './guards/rols.exists.guard'
 import { UsersService } from './user.service'
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard'
-import {Roles, RolesAuthGuard} from '../auth/guards/rols-auth.guard'
+import { Roles, RolesAuthGuard } from '../auth/guards/rols-auth.guard'
 import { IdValidatePipe } from '../orders/pipes/id-validate.pipe'
 import { CreateOrderDto } from '../orders/dto/create-order.dto'
 import { UpdateOrderDto } from '../orders/dto/update-order.dto'
@@ -103,7 +102,7 @@ export class UsersController {
   @Roles('ADMIN', 'SELLER')
   async getOrder(
     @Req() request: any,
-    @Param('id', IdValidatePipe) id: ObjectId,
+    @Param('id', new IdValidatePipe()) id: string,
   ) {
     return await this.usersService.getOrder(request.user.id, id)
   }
@@ -122,7 +121,7 @@ export class UsersController {
   @Put('me/orders/:id')
   @Roles('ADMIN')
   async updatePedido(
-    @Param('id', IdValidatePipe) id: ObjectId,
+    @Param('id', IdValidatePipe) id: string,
     @Body() updateOrderDto: UpdateOrderDto,
     @Req() request: any,
   ) {
@@ -140,7 +139,7 @@ export class UsersController {
   @HttpCode(204)
   @Roles('ADMIN')
   async removePedido(
-    @Param('id', IdValidatePipe) id: ObjectId,
+    @Param('id', IdValidatePipe) id: string,
     @Req() request: any,
   ) {
     this.logger.log(`Eliminando pedido con id ${id}`)

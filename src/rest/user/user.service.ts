@@ -10,7 +10,6 @@ import { Repository } from 'typeorm'
 import { User } from './entities/user.entity'
 import { CreateUserDto } from './dto/create-user.dto'
 import { UpdateUserDto } from './dto/update-user.dto'
-import { ObjectId } from 'mongodb'
 import { UsersMapper } from './mapper/users.mapper'
 import { Role, UserRole } from './entities/user.roles.entity'
 import { OrdersService } from '../orders/orders.service'
@@ -158,8 +157,8 @@ export class UsersService {
     return await this.ordersService.getOrderByUser(id)
   }
 
-  async getOrder(idUser: number, idOrder: ObjectId) {
-    const order = await this.ordersService.findOne(idOrder.toHexString())
+  async getOrder(idUser: number, idOrder: string) {
+    const order = await this.ordersService.findOne(idOrder)
     console.log(order.idUser)
     console.log(idUser)
     if (order.idUser != idUser) {
@@ -181,7 +180,7 @@ export class UsersService {
   }
 
   async updatePedido(
-    id: ObjectId,
+    id: string,
     updateOrderDto: UpdateOrderDto,
     userId: number,
   ) {
@@ -193,24 +192,24 @@ export class UsersService {
         'Producto idUsuario must be the same as the authenticated user',
       )
     }
-    const order = await this.ordersService.findOne(id.toHexString())
+    const order = await this.ordersService.findOne(id)
     if (order.idUser != userId) {
       throw new ForbiddenException(
         'Do not have permission to access this resource',
       )
     }
-    return await this.ordersService.update(id.toHexString(), updateOrderDto)
+    return await this.ordersService.update(id, updateOrderDto)
   }
 
-  async removePedido(idOrder: ObjectId, userId: number) {
+  async removePedido(idOrder: string, userId: number) {
     this.logger.log(`removePedido: ${idOrder}`)
-    const pedido = await this.ordersService.findOne(idOrder.toHexString())
+    const pedido = await this.ordersService.findOne(idOrder)
     if (pedido.idUser != userId) {
       throw new ForbiddenException(
         'Do not have permission to access this resource',
       )
     }
-    return await this.ordersService.remove(idOrder.toHexString())
+    return await this.ordersService.remove(idOrder)
   }
 
   private async findByEmail(email: string) {

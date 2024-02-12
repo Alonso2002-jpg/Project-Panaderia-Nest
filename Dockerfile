@@ -9,7 +9,7 @@ COPY package*.json ./
 
 # Instala las dependencias con ci es mas rapido y optimizado para docker
 # iestalamos todo porque vamos a hacer test, si no podríamos hacer npm ci --only=production
-RUN npm ci --force
+RUN npm ci
 
 # Copia el resto de archivos del proyecto al directorio de trabajo
 COPY . .
