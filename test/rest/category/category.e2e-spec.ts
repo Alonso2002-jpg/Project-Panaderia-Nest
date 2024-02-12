@@ -12,6 +12,9 @@ import { CategoryController } from '../../../src/rest/category/category.controll
 import { CategoryService } from '../../../src/rest/category/category.service'
 import { CacheModule } from '@nestjs/cache-manager'
 import { Category } from '../../../src/rest/category/entities/category.entity'
+import { CategoryMapper } from '../../../src/rest/category/mapper/category-mapper.service'
+import { JwtAuthGuard } from '../../../src/rest/auth/guards/jwt-auth.guard'
+import { RolesAuthGuard } from '../../../src/rest/auth/guards/rols-auth.guard'
 
 describe('CategoryController (e2e)', () => {
   let app: INestApplication
@@ -62,8 +65,14 @@ describe('CategoryController (e2e)', () => {
       providers: [
         CategoryService,
         { provide: CategoryService, useValue: mockCategoryService },
+        { provide: CategoryMapper, useValue: mockMapper },
       ],
-    }).compile()
+    })
+      .overrideGuard(JwtAuthGuard)
+      .useValue({ canActivate: () => true })
+      .overrideGuard(RolesAuthGuard)
+      .useValue({ canActivate: () => true })
+      .compile()
 
     app = moduleFixture.createNestApplication()
     await app.init()

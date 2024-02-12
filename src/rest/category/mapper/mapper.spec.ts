@@ -22,7 +22,9 @@ describe('Mapper', () => {
 
   describe('should be mapped to a category', () => {
     it('should be mapped to a category from create dto', () => {
-      const category = provider.mapCategory(new CreateCategoryDto())
+      const cate = new CreateCategoryDto()
+      cate.nameCategory = 'test'
+      const category = provider.mapCategory(cate)
 
       expect(category).toBeDefined()
       expect(category).toBeInstanceOf(Category)
